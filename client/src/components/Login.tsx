@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../supabaseClient.ts';
 import { GraduationCap, Calendar, User, Lock } from 'lucide-react';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 interface Student {
   id: number;
@@ -35,33 +29,40 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      const { data, error } = await supabase
+      const { data: student, error } = await supabase
         .from('students')
         .select('*')
         .eq('student_id', studentId)
         .eq('date_of_birth', dateOfBirth)
         .single();
 
-      if (error || !data) {
-        setError('Login failed. Please check your Student ID and Date of Birth.');
+      if (error || !student) {
+        setError('Invalid Student ID or Date of Birth');
       } else {
         onLogin({
-          id: data.id,
-          studentId: data.student_id,
-          name: data.name,
-          email: data.email,
-          department: data.department,
-          year: data.year,
-          semester: data.semester,
-          dateOfBirth: data.date_of_birth,
+          id: student.id,
+          studentId: student.student_id,
+          name: student.name,
+          email: student.email,
+          department: student.department,
+          year: student.year,
+          semester: student.semester,
+          dateOfBirth: student.date_of_birth
         });
       }
-    } catch (err) {
-      console.error(err);
-      setError('Unexpected error. Please try again later.');
+    } catch (err: any) {
+      setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleStudentIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStudentId((e.target as HTMLInputElement).value);
+  };
+
+  const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateOfBirth((e.target as HTMLInputElement).value);
   };
 
   return (
@@ -91,7 +92,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               type="text"
               className="form-input"
               value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
+              onChange={handleStudentIdChange}
               placeholder="Enter your Student ID"
               required
             />
@@ -106,7 +107,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               type="date"
               className="form-input"
               value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
+              onChange={handleDobChange}
               required
             />
           </div>

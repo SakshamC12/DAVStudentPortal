@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { supabase } from '../supabaseClient.ts';
 import { User, Mail, Phone, MapPin, Calendar, BookOpen } from 'lucide-react';
 
 interface Student {
@@ -41,15 +41,19 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
 
   const fetchProfile = async () => {
     try {
-      const response = await axios.post('/api/profile', {
-        studentId: student.studentId,
-        dateOfBirth: student.dateOfBirth
-      });
-      if (response.data.success) {
-        setProfile(response.data.profile);
+      const { data: profile, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('student_id', student.studentId)
+        .eq('date_of_birth', student.dateOfBirth)
+        .single();
+      if (error || !profile) {
+        setError('Invalid Student ID or Date of Birth');
+      } else {
+        setProfile(profile);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to fetch profile');
+      setError('Failed to fetch profile');
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { supabase } from '../supabaseClient.ts';
 import { BookOpen, TrendingUp, Calendar } from 'lucide-react';
 
 interface Student {
@@ -41,15 +41,17 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
 
   const fetchMarks = async () => {
     try {
-      const response = await axios.post('/api/marks', {
-        studentId: student.studentId,
-        dateOfBirth: student.dateOfBirth
-      });
-      if (response.data.success) {
-        setMarks(response.data.marks);
+      const { data: marks, error } = await supabase
+        .from('student_marks_display')
+        .select('*')
+        .eq('student_id', student.studentId);
+      if (error) {
+        setError('Failed to fetch marks');
+      } else {
+        setMarks(marks || []);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to fetch marks');
+      setError('Failed to fetch marks');
     } finally {
       setLoading(false);
     }
