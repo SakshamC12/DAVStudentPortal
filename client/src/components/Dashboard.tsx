@@ -108,25 +108,9 @@ const Dashboard: React.FC<DashboardProps> = ({ student }) => {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="card">
-        <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-            <TrendingUp size={20} className="mr-3 text-green-500" />
-            <div>
-              <p className="font-semibold">Marks Updated</p>
-              <p className="text-sm text-gray-600">Your latest semester marks have been published</p>
-            </div>
-          </div>
-          <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-            <Calendar size={20} className="mr-3 text-blue-500" />
-            <div>
-              <p className="font-semibold">Academic Calendar</p>
-              <p className="text-sm text-gray-600">Check important dates for the current semester</p>
-            </div>
-          </div>
-        </div>
+      {/* Made by Card */}
+      <div className="card" style={{ textAlign: 'center', padding: '2rem', marginTop: '2rem' }}>
+        <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>Made by Saksham Chaturvedi.</span>
       </div>
     </div>
   );

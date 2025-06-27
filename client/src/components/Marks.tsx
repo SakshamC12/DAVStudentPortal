@@ -139,25 +139,9 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
         </div>
       </div>
 
-      {/* Recent Activity Card with better icon/text alignment */}
-      <div className="card" style={{ maxWidth: 1200, margin: '2rem auto 0 auto', padding: '2rem' }}>
-        <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          <div className="flex flex-col gap-4">
-            <div>
-              <div className="flex items-center" style={{ minHeight: 24 }}>
-                <span className="font-semibold" style={{ fontSize: '1.08rem' }}>Marks Updated</span>
-              </div>
-              <p className="text-sm text-gray-600" style={{ marginLeft: 0 }}>Your latest semester marks have been published</p>
-            </div>
-            <div>
-              <div className="flex items-center" style={{ minHeight: 24 }}>
-                <span className="font-semibold" style={{ fontSize: '1.08rem' }}>Academic Calendar</span>
-              </div>
-              <p className="text-sm text-gray-600" style={{ marginLeft: 0 }}>Check important dates for the current semester</p>
-            </div>
-          </div>
-        </div>
+      {/* Made by Card */}
+      <div className="card" style={{ textAlign: 'center', padding: '2rem', marginTop: '2rem' }}>
+        <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>Made by Saksham Chaturvedi.</span>
       </div>
     </div>
   );
