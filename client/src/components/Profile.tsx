@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient.ts';
+import { supabase } from '../supabaseClient';
 import { User, Mail, Phone, MapPin, Calendar, BookOpen } from 'lucide-react';
 
 interface Student {
