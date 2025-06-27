@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { createClient } from '@supabase/supabase-js';
 import { GraduationCap, Calendar, User, Lock } from 'lucide-react';
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface Student {
   id: number;
@@ -9,6 +15,7 @@ interface Student {
   email: string;
   department: string;
   year: number;
+  semester: number;
   dateOfBirth: string;
 }
 
@@ -28,19 +35,30 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await axios.post('/api/auth/student', {
-        studentId,
-        dateOfBirth
-      });
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('student_id', studentId)
+        .eq('date_of_birth', dateOfBirth)
+        .single();
 
-      if (response.data.success) {
+      if (error || !data) {
+        setError('Login failed. Please check your Student ID and Date of Birth.');
+      } else {
         onLogin({
-          ...response.data.student,
-          dateOfBirth: dateOfBirth
+          id: data.id,
+          studentId: data.student_id,
+          name: data.name,
+          email: data.email,
+          department: data.department,
+          year: data.year,
+          semester: data.semester,
+          dateOfBirth: data.date_of_birth,
         });
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+    } catch (err) {
+      console.error(err);
+      setError('Unexpected error. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -58,7 +76,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
 
         {error && (
-          <div className="alert alert-error">
+          <div className="alert alert-error mb-4 text-red-600 text-sm text-center">
             {error}
           </div>
         )}
@@ -79,7 +97,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="form-group mt-4">
             <label className="form-label">
               <Calendar size={16} className="inline mr-2" />
               Date of Birth
@@ -95,12 +113,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           <button
             type="submit"
-            className="btn w-full"
+            className="btn w-full mt-6"
             disabled={loading}
           >
             {loading ? (
               <div className="flex items-center justify-center">
-                <div className="spinner" style={{ width: '20px', height: '20px', marginRight: '8px' }}></div>
+                <div className="spinner mr-2" style={{ width: '20px', height: '20px' }}></div>
                 Signing In...
               </div>
             ) : (
@@ -120,4 +138,4 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   );
 };
 
-export default Login; 
+export default Login;

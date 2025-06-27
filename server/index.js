@@ -1,201 +1,134 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
+import React, { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import { GraduationCap, Calendar, User, Lock } from 'lucide-react';
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-app.set('trust proxy', 1); // Trust first proxy for rate limiting
-
-// Security middleware
-app.use(helmet());
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com'] 
-    : ['http://localhost:3000'],
-  credentials: true
-}));
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use('/api/', limiter);
-
-// Body parsing middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase configuration. Please check your environment variables.');
-  process.exit(1);
+interface Student {
+  id: number;
+  studentId: string;
+  name: string;
+  email: string;
+  department: string;
+  year: number;
+  semester: number;
+  dateOfBirth: string;
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+interface LoginProps {
+  onLogin: (student: Student) => void;
+}
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'DAV Student Portal API is running' });
-});
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const [studentId, setStudentId] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-// Student authentication endpoint
-app.post('/api/auth/student', async (req, res) => {
-  try {
-    const { studentId, dateOfBirth } = req.body;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-    if (!studentId || !dateOfBirth) {
-      return res.status(400).json({ 
-        error: 'Student ID and Date of Birth are required' 
-      });
-    }
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .eq('student_id', studentId)
+        .eq('date_of_birth', dateOfBirth)
+        .single();
 
-    // Query the students table to verify credentials
-    const { data: student, error } = await supabase
-      .from('students')
-      .select('*')
-      .eq('student_id', studentId)
-      .eq('date_of_birth', dateOfBirth)
-      .single();
-
-    if (error || !student) {
-      return res.status(401).json({ 
-        error: 'Invalid Student ID or Date of Birth' 
-      });
-    }
-
-    // Return student info (without sensitive data)
-    res.json({
-      success: true,
-      student: {
-        id: student.id,
-        studentId: student.student_id,
-        name: student.name,
-        email: student.email,
-        department: student.department,
-        year: student.year
+      if (error || !data) {
+        setError('Invalid Student ID or Date of Birth.');
+        return;
       }
-    });
 
-  } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Get student marks endpoint
-app.post('/api/marks', async (req, res) => {
-  try {
-    const { studentId, dateOfBirth } = req.body;
-
-    if (!studentId || !dateOfBirth) {
-      return res.status(400).json({ 
-        error: 'Student ID and Date of Birth are required' 
+      // Format and pass the student data to parent
+      onLogin({
+        id: data.id,
+        studentId: data.student_id,
+        name: data.name,
+        email: data.email,
+        department: data.department,
+        year: data.year,
+        semester: data.semester,
+        dateOfBirth: data.date_of_birth,
       });
+    } catch (err) {
+      console.error(err);
+      setError('Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // First verify the student exists
-    const { data: student, error: studentError } = await supabase
-      .from('students')
-      .select('student_id')
-      .eq('student_id', studentId)
-      .eq('date_of_birth', dateOfBirth)
-      .single();
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-4">
+            <GraduationCap size={48} color="#667eea" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">DAV Student Portal</h1>
+          <p className="text-gray-600">Sign in to access your academic records</p>
+        </div>
 
-    if (studentError || !student) {
-      return res.status(401).json({ 
-        error: 'Invalid Student ID or Date of Birth' 
-      });
-    }
+        {error && <div className="alert alert-error">{error}</div>}
 
-    // Fetch marks from the view
-    const { data: marks, error: marksError } = await supabase
-      .from('student_marks_display')
-      .select('*')
-      .eq('student_id', studentId);
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">
+              <User size={16} className="inline mr-2" />
+              Student ID
+            </label>
+            <input
+              type="text"
+              className="form-input"
+              value={studentId}
+              onChange={(e) => setStudentId(e.target.value)}
+              placeholder="Enter your Student ID"
+              required
+            />
+          </div>
 
-    if (marksError) {
-      console.error('Error fetching marks:', marksError);
-      return res.status(500).json({ error: 'Error fetching marks' });
-    }
+          <div className="form-group">
+            <label className="form-label">
+              <Calendar size={16} className="inline mr-2" />
+              Date of Birth
+            </label>
+            <input
+              type="date"
+              className="form-input"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              required
+            />
+          </div>
 
-    res.json({
-      success: true,
-      marks: marks || []
-    });
+          <button type="submit" className="btn w-full" disabled={loading}>
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="spinner" style={{ width: '20px', height: '20px', marginRight: '8px' }}></div>
+                Signing In...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <Lock size={16} className="mr-2" />
+                Sign In
+              </div>
+            )}
+          </button>
+        </form>
 
-  } catch (error) {
-    console.error('Marks retrieval error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+        <div className="text-center mt-6 text-sm text-gray-500">
+          <p>Use your Student ID and Date of Birth to access your records</p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
-// Get student profile endpoint
-app.post('/api/profile', async (req, res) => {
-  try {
-    const { studentId, dateOfBirth } = req.body;
-
-    if (!studentId || !dateOfBirth) {
-      return res.status(400).json({ 
-        error: 'Student ID and Date of Birth are required' 
-      });
-    }
-
-    const { data: student, error } = await supabase
-      .from('students')
-      .select(`
-        id,
-        student_id,
-        name,
-        email,
-        department,
-        year,
-        semester,
-        date_of_birth,
-        phone,
-        address
-      `)
-      .eq('student_id', studentId)
-      .eq('date_of_birth', dateOfBirth)
-      .single();
-
-    if (error || !student) {
-      return res.status(401).json({ 
-        error: 'Invalid Student ID or Date of Birth' 
-      });
-    }
-
-    res.json({
-      success: true,
-      profile: student
-    });
-
-  } catch (error) {
-    console.error('Profile retrieval error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 DAV Student Portal API running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-}); 
+export default Login;
