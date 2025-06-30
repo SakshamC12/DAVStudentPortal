@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, Home, BookOpen, User } from 'lucide-react';
+import { LogOut, Home, BookOpen, User, Menu, X } from 'lucide-react';
 
 interface Student {
   id: number;
@@ -19,6 +19,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
@@ -55,9 +56,26 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
             DAV Student Portal
           </span>
         </div>
-        {/* Nav Links */}
+        {/* Hamburger Icon (mobile only) */}
+        <button
+          className="navbar-hamburger md:hidden"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          onClick={() => setMenuOpen((open) => !open)}
+          style={{
+            display: 'none',
+            background: 'none',
+            border: 'none',
+            marginLeft: 12,
+            cursor: 'pointer',
+            padding: 8,
+            zIndex: 110,
+          }}
+        >
+          {menuOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+        {/* Nav Links & Logout (desktop or mobile menu open) */}
         <nav
-          className="navbar-links"
+          className={`navbar-links${menuOpen ? ' open' : ''}`}
           style={{
             display: 'flex',
             flexDirection: 'row',
@@ -79,6 +97,7 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
                   isActive ? 'navbar-link-active' : 'navbar-link-inactive'
                 }`}
                 style={{ fontWeight: 500, fontSize: '1.08rem', whiteSpace: 'nowrap' }}
+                onClick={() => setMenuOpen(false)}
               >
                 <Icon size={18} className="mr-2" />
                 {item.label}
@@ -86,39 +105,42 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
             );
           })}
         </nav>
-        {/* Logout Button */}
         <button
           onClick={onLogout}
-          className="navbar-logout flex items-center px-4 py-2 rounded-lg transition-colors"
+          className={`navbar-logout${menuOpen ? ' open' : ''} flex items-center px-4 py-2 rounded-lg transition-colors`}
           style={{ marginLeft: 12, minWidth: 120, fontWeight: 600, fontSize: '1.08rem' }}
         >
           <LogOut size={18} className="mr-2" />
           Logout
         </button>
       </div>
-      {/* Responsive: Stack vertically on small screens */}
+      {/* Responsive: Hamburger menu for mobile */}
       <style>{`
         @media (max-width: 700px) {
-          .navbar-content {
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 0.5rem;
-            padding: 0 0.5rem;
+          .navbar-hamburger {
+            display: block !important;
           }
-          .navbar-links {
+          .navbar-links,
+          .navbar-logout {
+            display: none !important;
+          }
+          .navbar-links.open,
+          .navbar-logout.open {
+            display: flex !important;
             flex-direction: column !important;
-            gap: 0.5rem !important;
             width: 100%;
             margin: 0.5rem 0;
+            background: #fff;
+            box-shadow: 0 4px 16px rgba(166, 25, 46, 0.08);
+            border-radius: 0 0 12px 12px;
+            z-index: 109;
           }
-          .navbar-logout {
-            width: 100%;
+          .navbar-links.open {
+            gap: 0.5rem !important;
+          }
+          .navbar-logout.open {
             margin-left: 0 !important;
             margin-bottom: 0.5rem;
-          }
-          .navbar-left {
-            margin-bottom: 0.5rem;
-            justify-content: center;
           }
         }
       `}</style>
