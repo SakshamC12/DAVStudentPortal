@@ -16,6 +16,7 @@ interface Student {
   year: number;
   dateOfBirth: string;
   semester: number;
+  pfp_url?: string;
 }
 
 function App() {
@@ -39,6 +40,11 @@ function App() {
     setStudent(null);
     setIsAuthenticated(false);
     localStorage.removeItem('student');
+  };
+
+  const handleProfileUpdate = (updatedStudent: Student) => {
+    setStudent(updatedStudent);
+    localStorage.setItem('student', JSON.stringify(updatedStudent));
   };
 
   return (
@@ -84,7 +90,7 @@ function App() {
               path="/profile" 
               element={
                 isAuthenticated ? (
-                  <Profile student={student!} />
+                  <Profile student={student!} onProfileUpdate={handleProfileUpdate} />
                 ) : (
                   <Navigate to="/" replace />
                 )

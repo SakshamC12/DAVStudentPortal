@@ -10,6 +10,7 @@ interface Student {
   department: string;
   year: number;
   dateOfBirth: string;
+  pfp_url?: string;
 }
 
 interface DashboardProps {
@@ -68,8 +69,13 @@ const Dashboard: React.FC<DashboardProps> = ({ student }) => {
               </table>
             </div>
             <div className="flex flex-col items-center justify-center">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
-                <User size={40} color="white" />
+              {/* Profile Picture */}
+              <div style={{ marginBottom: 12 }}>
+                <img
+                  src={student.pfp_url ? `${student.pfp_url}?${Date.now()}` : '/default_pfp.png'}
+                  alt="Profile"
+                  style={{ width: 90, height: 90, borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff', background: '#eee' }}
+                />
               </div>
               <h3 className="text-lg font-semibold">{student.name}</h3>
               <p className="text-gray-600">{student.email}</p>

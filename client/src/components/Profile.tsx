@@ -11,6 +11,7 @@ interface Student {
   year: number;
   semester: number;
   dateOfBirth: string;
+  pfp_url?: string;
 }
 
 interface ProfileData {
@@ -27,6 +28,7 @@ interface ProfileData {
   gender?: string;
   blood_group?: string;
   secondary_email?: string;
+  pfp_url?: string;
 }
 
 interface Guardian {
@@ -39,9 +41,10 @@ interface Guardian {
 
 interface ProfileProps {
   student: Student;
+  onProfileUpdate: (updatedStudent: Student) => void;
 }
 
-const Profile: React.FC<ProfileProps> = ({ student }) => {
+const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate }) => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +55,7 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
   const [editProfile, setEditProfile] = useState<Partial<ProfileData>>({});
   const [editGuardians, setEditGuardians] = useState<Guardian[]>([]);
   const [newGuardian, setNewGuardian] = useState<Partial<Guardian>>({ guardian_name: '', guardian_contact: '', relation: '' });
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -183,6 +187,25 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
       for (const id of toDelete) {
         await supabase.from('guardians').delete().eq('id', id);
       }
+      // Fetch updated student and call onProfileUpdate
+      const { data: updatedStudent } = await supabase
+        .from('students')
+        .select('*')
+        .eq('id', profile!.id)
+        .single();
+      if (updatedStudent) {
+        onProfileUpdate({
+          id: updatedStudent.id,
+          studentId: updatedStudent.student_id,
+          name: updatedStudent.name,
+          email: updatedStudent.email,
+          department: updatedStudent.department,
+          year: updatedStudent.year,
+          dateOfBirth: updatedStudent.date_of_birth,
+          semester: updatedStudent.semester,
+          pfp_url: updatedStudent.pfp_url,
+        });
+      }
       setSuccess('Profile updated successfully!');
       setEditMode(false);
       fetchProfile();
@@ -190,6 +213,62 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
       setError('Failed to update profile.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleProfilePicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = (e.target as any).files?.[0];
+    if (!file || !profile) return;
+    setUploading(true);
+    try {
+      // Delete old profile picture if it exists and is not the default
+      if (profile.pfp_url && !profile.pfp_url.includes('/default_pfp.png')) {
+        // Extract the file name from the public URL
+        const match = profile.pfp_url.match(/profile-pictures\/(.+)$/);
+        if (match && match[1]) {
+          await supabase.storage.from('profile-pictures').remove([match[1]]);
+        }
+      }
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${profile.student_id}_${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      // Get public URL
+      const { data } = supabase.storage.from('profile-pictures').getPublicUrl(fileName);
+      const publicUrl = data.publicUrl;
+      // Update student pfp_url
+      const { error: updateError } = await supabase
+        .from('students')
+        .update({ pfp_url: publicUrl })
+        .eq('id', profile.id);
+      if (updateError) throw updateError;
+      // Fetch updated student and call onProfileUpdate
+      const { data: updatedStudent } = await supabase
+        .from('students')
+        .select('*')
+        .eq('id', profile.id)
+        .single();
+      if (updatedStudent) {
+        onProfileUpdate({
+          id: updatedStudent.id,
+          studentId: updatedStudent.student_id,
+          name: updatedStudent.name,
+          email: updatedStudent.email,
+          department: updatedStudent.department,
+          year: updatedStudent.year,
+          dateOfBirth: updatedStudent.date_of_birth,
+          semester: updatedStudent.semester,
+          pfp_url: updatedStudent.pfp_url,
+        });
+      }
+      setSuccess('Profile picture updated!');
+      fetchProfile();
+    } catch (err: any) {
+      setError('Failed to upload profile picture.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -216,7 +295,27 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
   return (
     <div className="py-8">
       <div className="card" style={{ maxWidth: 800, margin: '0 auto', padding: 0 }}>
-        <div style={{ background: '#a6192e', color: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: '1.5rem 2rem 1rem 2rem' }}>
+        <div style={{ background: '#a6192e', color: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: '1.5rem 2rem 1rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* Profile Picture */}
+          <div style={{ marginBottom: 16 }}>
+            <img
+              src={profile?.pfp_url || '/default_pfp.png'}
+              alt="Profile"
+              style={{ width: 110, height: 110, borderRadius: '50%', objectFit: 'cover', border: '3px solid #fff', background: '#eee' }}
+            />
+            {editMode && (
+              <div style={{ marginTop: 8 }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePicUpload}
+                  disabled={uploading}
+                  style={{ marginTop: 4 }}
+                />
+                {uploading && <span style={{ marginLeft: 8, color: '#a6192e' }}>Uploading...</span>}
+              </div>
+            )}
+          </div>
           <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: 0 }}>Student Profile</h1>
           <p style={{ fontSize: '1.1rem', marginTop: 4, opacity: 0.95 }}>View and manage your personal information</p>
         </div>
