@@ -76,15 +76,6 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
         {/* Nav Links & Logout (desktop or mobile menu open) */}
         <nav
           className={`navbar-links${menuOpen ? ' open' : ''}`}
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '2rem',
-            flex: 1,
-            minWidth: 0,
-          }}
         >
           {navItems.map((item) => {
             const Icon = item.icon;
