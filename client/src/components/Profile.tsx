@@ -46,6 +46,12 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [success, setSuccess] = useState('');
+  // Editable fields state
+  const [editProfile, setEditProfile] = useState<Partial<ProfileData>>({});
+  const [editGuardians, setEditGuardians] = useState<Guardian[]>([]);
+  const [newGuardian, setNewGuardian] = useState<Partial<Guardian>>({ guardian_name: '', guardian_contact: '', relation: '' });
 
   useEffect(() => {
     fetchProfile();
@@ -53,6 +59,9 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
   }, []);
 
   const fetchProfile = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
     try {
       const { data: profile, error: profileError } = await supabase
         .from('students')
@@ -66,6 +75,11 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
         return;
       }
       setProfile(profile);
+      setEditProfile({
+        secondary_email: profile.secondary_email || '',
+        phone: profile.phone || '',
+        address: profile.address || '',
+      });
       // Fetch guardians
       const { data: guardians, error: guardiansError } = await supabase
         .from('guardians')
@@ -73,9 +87,107 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
         .eq('student_id', profile.id);
       if (!guardiansError && guardians) {
         setGuardians(guardians);
+        setEditGuardians(guardians);
       }
     } catch (err: any) {
       setError('Failed to fetch profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const name = (e.target as any).name;
+    const value = (e.target as any).value;
+    setEditProfile((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleGuardianChange = (idx: number, field: keyof Guardian, value: string) => {
+    setEditGuardians((prev) => prev.map((g, i) => i === idx ? { ...g, [field]: value } : g));
+  };
+
+  const handleNewGuardianChange = (field: keyof Guardian, value: string) => {
+    setNewGuardian((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddGuardian = () => {
+    if (!newGuardian.guardian_name || !newGuardian.guardian_contact || !newGuardian.relation) return;
+    setEditGuardians((prev) => [...prev, { ...newGuardian, id: 0, student_id: profile!.id } as Guardian]);
+    setNewGuardian({ guardian_name: '', guardian_contact: '', relation: '' });
+  };
+
+  const handleDeleteGuardian = (idx: number) => {
+    setEditGuardians((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleEdit = () => {
+    setEditMode(true);
+    setSuccess('');
+    setError('');
+  };
+
+  const handleCancel = () => {
+    setEditMode(false);
+    setEditProfile({
+      secondary_email: profile?.secondary_email || '',
+      phone: profile?.phone || '',
+      address: profile?.address || '',
+    });
+    setEditGuardians(guardians);
+    setNewGuardian({ guardian_name: '', guardian_contact: '', relation: '' });
+    setSuccess('');
+    setError('');
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      // Update students table
+      const { error: updateError } = await supabase
+        .from('students')
+        .update({
+          secondary_email: editProfile.secondary_email,
+          phone: editProfile.phone,
+          address: editProfile.address,
+        })
+        .eq('id', profile!.id);
+      if (updateError) throw updateError;
+      // Update guardians
+      // 1. Update or insert
+      for (const g of editGuardians) {
+        if (g.id === 0) {
+          // New guardian
+          if (g.guardian_name && g.guardian_contact && g.relation) {
+            await supabase.from('guardians').insert({
+              student_id: profile!.id,
+              guardian_name: g.guardian_name,
+              guardian_contact: g.guardian_contact,
+              relation: g.relation,
+            });
+          }
+        } else {
+          // Existing guardian
+          await supabase.from('guardians').update({
+            guardian_name: g.guardian_name,
+            guardian_contact: g.guardian_contact,
+            relation: g.relation,
+          }).eq('id', g.id);
+        }
+      }
+      // 2. Delete guardians removed in edit
+      const originalIds = guardians.map((g) => g.id);
+      const editedIds = editGuardians.filter((g) => g.id !== 0).map((g) => g.id);
+      const toDelete = originalIds.filter((id) => !editedIds.includes(id));
+      for (const id of toDelete) {
+        await supabase.from('guardians').delete().eq('id', id);
+      }
+      setSuccess('Profile updated successfully!');
+      setEditMode(false);
+      fetchProfile();
+    } catch (err: any) {
+      setError('Failed to update profile.');
     } finally {
       setLoading(false);
     }
@@ -109,6 +221,8 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
           <p style={{ fontSize: '1.1rem', marginTop: 4, opacity: 0.95 }}>View and manage your personal information</p>
         </div>
         <div style={{ padding: '2rem' }}>
+          {success && <div className="alert alert-success mb-4">{success}</div>}
+          {error && <div className="alert alert-error mb-4">{error}</div>}
           <table style={{ width: '100%', fontSize: '1.1rem' }}>
             <tbody>
               <tr>
@@ -125,7 +239,20 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Secondary Email</td>
-                <td>{profile?.secondary_email || 'Not provided'}</td>
+                <td>
+                  {editMode ? (
+                    <input
+                      type="email"
+                      name="secondary_email"
+                      className="form-input"
+                      value={editProfile.secondary_email || ''}
+                      onChange={handleProfileChange}
+                      style={{ width: '100%' }}
+                    />
+                  ) : (
+                    profile?.secondary_email || 'Not provided'
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Department</td>
@@ -153,11 +280,36 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Phone Number</td>
-                <td>{profile?.phone || 'Not provided'}</td>
+                <td>
+                  {editMode ? (
+                    <input
+                      type="text"
+                      name="phone"
+                      className="form-input"
+                      value={editProfile.phone || ''}
+                      onChange={handleProfileChange}
+                      style={{ width: '100%' }}
+                    />
+                  ) : (
+                    profile?.phone || 'Not provided'
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Address</td>
-                <td>{profile?.address || 'Not provided'}</td>
+                <td>
+                  {editMode ? (
+                    <textarea
+                      name="address"
+                      className="form-input"
+                      value={editProfile.address || ''}
+                      onChange={handleProfileChange}
+                      style={{ width: '100%' }}
+                    />
+                  ) : (
+                    profile?.address || 'Not provided'
+                  )}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -169,39 +321,133 @@ const Profile: React.FC<ProfileProps> = ({ student }) => {
           <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 0 }}>Guardians</h2>
         </div>
         <div style={{ padding: '2rem' }}>
-          {guardians.length === 0 ? (
-            <p className="text-gray-600">No guardians listed for this student.</p>
-          ) : (
-            <table style={{ width: '100%', fontSize: '1.05rem' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Name</th>
-                  <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Contact</th>
-                  <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Relation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {guardians.map((g) => (
-                  <tr key={g.id}>
-                    <td style={{ padding: '10px 8px' }}>{g.guardian_name}</td>
-                    <td style={{ padding: '10px 8px' }}>{g.guardian_contact}</td>
-                    <td style={{ padding: '10px 8px' }}>{g.relation}</td>
+          {editMode ? (
+            <>
+              <table style={{ width: '100%', fontSize: '1.05rem' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Name</th>
+                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Contact</th>
+                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Relation</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {editGuardians.map((g, idx) => (
+                    <tr key={g.id || idx}>
+                      <td style={{ padding: '10px 8px' }}>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={g.guardian_name}
+                          onChange={e => handleGuardianChange(idx, 'guardian_name', (e.target as any).value)}
+                        />
+                      </td>
+                      <td style={{ padding: '10px 8px' }}>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={g.guardian_contact}
+                          onChange={e => handleGuardianChange(idx, 'guardian_contact', (e.target as any).value)}
+                        />
+                      </td>
+                      <td style={{ padding: '10px 8px' }}>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={g.relation}
+                          onChange={e => handleGuardianChange(idx, 'relation', (e.target as any).value)}
+                        />
+                      </td>
+                      <td>
+                        <button className="btn btn-secondary" onClick={() => handleDeleteGuardian(idx)} type="button">Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {/* New Guardian Row */}
+                  <tr>
+                    <td style={{ padding: '10px 8px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Name"
+                        value={newGuardian.guardian_name || ''}
+                        onChange={e => handleNewGuardianChange('guardian_name', (e.target as any).value)}
+                      />
+                    </td>
+                    <td style={{ padding: '10px 8px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Contact"
+                        value={newGuardian.guardian_contact || ''}
+                        onChange={e => handleNewGuardianChange('guardian_contact', (e.target as any).value)}
+                      />
+                    </td>
+                    <td style={{ padding: '10px 8px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Relation"
+                        value={newGuardian.relation || ''}
+                        onChange={e => handleNewGuardianChange('relation', (e.target as any).value)}
+                      />
+                    </td>
+                    <td>
+                      <button className="btn" type="button" onClick={handleAddGuardian} style={{ background: '#a6192e', color: '#fff', fontWeight: 600, fontSize: '1rem', borderRadius: 8 }}>Add</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </>
+          ) : (
+            guardians.length === 0 ? (
+              <p className="text-gray-600">No guardians listed for this student.</p>
+            ) : (
+              <table style={{ width: '100%', fontSize: '1.05rem' }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Name</th>
+                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Contact</th>
+                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#a6192e' }}>Relation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {guardians.map((g) => (
+                    <tr key={g.id}>
+                      <td style={{ padding: '10px 8px' }}>{g.guardian_name}</td>
+                      <td style={{ padding: '10px 8px' }}>{g.guardian_contact}</td>
+                      <td style={{ padding: '10px 8px' }}>{g.relation}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
           )}
         </div>
       </div>
-      {/* Note */}
-      <div className="card mt-8" style={{ maxWidth: 800, margin: '0 auto' }}>
-        <div className="alert alert-info">
-          <h3 className="font-semibold mb-2">Important Note</h3>
-          <p className="text-sm">
-            For any changes to your personal information, please contact your department office. 
-            This portal is for viewing purposes only.
-          </p>
-        </div>
+      {/* Edit Profile Button and Note, Save/Cancel in edit mode */}
+      <div style={{ maxWidth: 800, margin: '2rem auto 0 auto', textAlign: 'center' }}>
+        {!editMode && (
+          <>
+            <button
+              className="btn"
+              style={{ background: '#a6192e', color: '#fff', fontWeight: 600, fontSize: '1.1rem', borderRadius: 10, minWidth: 140, minHeight: 44, marginBottom: 12 }}
+              onClick={handleEdit}
+            >
+              Edit Profile
+            </button>
+            <div style={{ color: '#a6192e', fontSize: '0.98rem', marginTop: 4 }}>
+              Only select details can be changed from the portal. To change the remaining details, contact your department office.
+            </div>
+          </>
+        )}
+        {editMode && (
+          <div className="flex gap-4 mt-6" style={{ justifyContent: 'center' }}>
+            <button className="btn" onClick={handleSave} disabled={loading} style={{ background: '#a6192e', color: '#fff', fontWeight: 600, fontSize: '1.1rem', borderRadius: 10, minWidth: 140, minHeight: 44 }}>Save</button>
+            <button className="btn btn-secondary" onClick={handleCancel} disabled={loading} style={{ fontWeight: 600, fontSize: '1.1rem', borderRadius: 10, minWidth: 140, minHeight: 44 }}>Cancel</button>
+          </div>
+        )}
       </div>
     </div>
   );
