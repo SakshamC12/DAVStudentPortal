@@ -219,20 +219,22 @@ body {
     color: #a6192e;
   }
   .marks-table {
-    font-size: 0.92rem;
-    min-width: 900px;
-    table-layout: fixed;
+    font-size: 0.98rem;
+    min-width: 700px;
+    table-layout: auto;
   }
   .marks-table th, .marks-table td {
-    padding: 0.35rem 0.5rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: 0.6rem 0.7rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    vertical-align: top;
   }
   .marks-table td.subject-name {
-    font-size: 0.85rem;
-    min-width: 180px;
+    font-size: 0.95rem;
+    min-width: 120px;
     max-width: 220px;
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem 0.7rem;
+    word-break: break-word;
   }
 } 
