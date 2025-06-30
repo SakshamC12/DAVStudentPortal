@@ -97,8 +97,8 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
               <p className="text-gray-600">Your marks will appear here once they are published by your department.</p>
             </div>
           ) : (
-            <div className="card overflow-x-auto" style={{ boxShadow: 'none', margin: 0, padding: 0 }}>
-              <table className="table">
+            <div style={{ overflowX: 'auto', background: '#fff', borderRadius: 16, padding: '1rem', marginTop: '1rem' }}>
+              <table style={{ minWidth: 700, width: '100%' }}>
                 <thead>
                   <tr>
                     <th>S.No.</th>

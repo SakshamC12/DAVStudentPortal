@@ -27,15 +27,15 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
   ];
 
   return (
-    <header className="navbar">
-      <div className="navbar-content container flex items-center justify-between w-full">
+    <header className="navbar flex flex-col md:flex-row items-center justify-between w-full px-2 md:px-0">
+      <div className="navbar-content container flex flex-col md:flex-row items-center justify-between w-full">
         {/* Left: Logo/Title */}
-        <div className="navbar-left flex items-center flex-shrink-0" style={{ minWidth: 220 }}>
-          <img src="/DavLogo.svg" alt="DAV Logo" style={{ height: 40, width: 40, marginRight: 12 }} />
-          <span className="navbar-title font-bold text-xl">DAV Student Portal</span>
+        <div className="navbar-left flex items-center flex-shrink-0 w-full md:w-auto mb-2 md:mb-0" style={{ minWidth: 0 }}>
+          <img src="/DavLogo.svg" alt="DAV Logo" style={{ height: 40, width: 40, maxWidth: '100%', objectFit: 'contain', marginRight: 12 }} />
+          <span className="navbar-title font-bold text-xl truncate">DAV Student Portal</span>
         </div>
         {/* Center: Navigation Links */}
-        <nav className="navbar-links flex-1 flex items-center justify-center gap-12">
+        <nav className="navbar-links flex-1 flex flex-col md:flex-row items-center justify-center gap-4 md:gap-12 w-full md:w-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -56,15 +56,14 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
           })}
         </nav>
         {/* Right: Logout Button */}
-        <div className="navbar-right flex items-center flex-shrink-0" style={{ minWidth: 120, justifyContent: 'flex-end' }}>
-          <button
-            onClick={onLogout}
-            className="navbar-logout flex items-center px-4 py-2 rounded-lg transition-colors"
-          >
-            <LogOut size={18} className="mr-2" />
-            Logout
-          </button>
-        </div>
+        <button
+          onClick={onLogout}
+          className="navbar-logout flex items-center px-4 py-2 rounded-lg transition-colors mt-2 md:mt-0 w-full md:w-auto justify-center md:justify-end"
+          style={{ maxWidth: 180 }}
+        >
+          <LogOut size={18} className="mr-2" />
+          Logout
+        </button>
       </div>
     </header>
   );
