@@ -218,4 +218,17 @@ body {
     background: #f7e6e9;
     color: #a6192e;
   }
+  .marks-table {
+    font-size: 0.92rem;
+    min-width: 700px;
+  }
+  .marks-table th, .marks-table td {
+    padding: 0.35rem 0.5rem;
+    white-space: nowrap;
+  }
+  .marks-table td.subject-name {
+    font-size: 0.85rem;
+    max-width: 120px;
+    padding: 0.25rem 0.5rem;
+  }
 } 

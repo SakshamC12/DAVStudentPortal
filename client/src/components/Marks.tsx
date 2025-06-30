@@ -98,7 +98,7 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
             </div>
           ) : (
             <div style={{ overflowX: 'auto', background: '#fff', borderRadius: 16, padding: '1rem', marginTop: '1rem' }}>
-              <table style={{ minWidth: 700, width: '100%' }}>
+              <table className="marks-table" style={{ minWidth: 700, width: '100%' }}>
                 <thead>
                   <tr>
                     <th>S.No.</th>
@@ -118,7 +118,7 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
                     <tr key={mark.subject_code}>
                       <td>{idx + 1}</td>
                       <td>{mark.subject_code}</td>
-                      <td>{mark.subject_name}</td>
+                      <td className="subject-name">{mark.subject_name}</td>
                       <td>{mark.credits}</td>
                       <td>{mark.max_mark}</td>
                       <td>{mark.pass_mark}</td>
