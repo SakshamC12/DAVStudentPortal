@@ -73,10 +73,8 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
         >
           {menuOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
-        {/* Nav Links & Logout (desktop or mobile menu open) */}
-        <nav
-          className={`navbar-links${menuOpen ? ' open' : ''}`}
-        >
+        {/* Desktop Nav Links & Logout */}
+        <nav className="navbar-links">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -88,7 +86,6 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
                   isActive ? 'navbar-link-active' : 'navbar-link-inactive'
                 }`}
                 style={{ fontWeight: 500, fontSize: '1.08rem', whiteSpace: 'nowrap' }}
-                onClick={() => setMenuOpen(false)}
               >
                 <Icon size={18} className="mr-2" />
                 {item.label}
@@ -98,12 +95,45 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
         </nav>
         <button
           onClick={onLogout}
-          className={`navbar-logout${menuOpen ? ' open' : ''} flex items-center px-4 py-2 rounded-lg transition-colors`}
+          className="navbar-logout flex items-center px-4 py-2 rounded-lg transition-colors"
           style={{ marginLeft: 12, minWidth: 120, fontWeight: 600, fontSize: '1.08rem' }}
         >
           <LogOut size={18} className="mr-2" />
           Logout
         </button>
+        {/* Mobile Dropdown: nav links + logout */}
+        {menuOpen && (
+          <div className="navbar-dropdown">
+            <nav className="navbar-links-mobile">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`navbar-link flex items-center px-3 py-2 rounded-lg transition-colors ${
+                      isActive ? 'navbar-link-active' : 'navbar-link-inactive'
+                    }`}
+                    style={{ fontWeight: 500, fontSize: '1.08rem', whiteSpace: 'nowrap' }}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <Icon size={18} className="mr-2" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <button
+              onClick={() => { setMenuOpen(false); onLogout(); }}
+              className="navbar-logout-mobile flex items-center px-4 py-2 rounded-lg transition-colors"
+              style={{ fontWeight: 600, fontSize: '1.08rem', margin: '0.5rem 1rem 0.5rem 1rem' }}
+            >
+              <LogOut size={18} className="mr-2" />
+              Logout
+            </button>
+          </div>
+        )}
       </div>
       {/* Responsive: Hamburger menu for mobile */}
       <style>{`

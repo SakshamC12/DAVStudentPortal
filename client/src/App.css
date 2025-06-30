@@ -163,9 +163,8 @@ body {
   .navbar-logout {
     display: none !important;
   }
-  .navbar-links.open,
-  .navbar-logout.open {
-    display: flex !important;
+  .navbar-dropdown {
+    display: block;
     position: absolute;
     top: 64px;
     left: 0;
@@ -174,16 +173,26 @@ body {
     box-shadow: 0 4px 16px rgba(166, 25, 46, 0.08);
     border-radius: 0 0 12px 12px;
     z-index: 109;
-    padding: 1rem 0 0.5rem 0;
-    flex-direction: column !important;
+    padding: 0.5rem 0 0.5rem 0;
+  }
+  .navbar-links-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
     align-items: stretch;
-    transition: opacity 0.2s;
+    padding: 0 1rem;
   }
-  .navbar-links.open {
-    gap: 0.5rem !important;
-  }
-  .navbar-logout.open {
-    margin-left: 0 !important;
-    margin-bottom: 0.5rem;
+  .navbar-logout-mobile {
+    width: 100%;
+    margin: 0.5rem 0 0.5rem 0;
+    font-size: 1rem;
+    min-width: 0;
+    padding: 12px 0;
+    justify-content: center;
+    background: linear-gradient(135deg, #a6192e 0%, #a6192e 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
   }
 } 
