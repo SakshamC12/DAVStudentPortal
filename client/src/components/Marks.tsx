@@ -103,7 +103,7 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
                   <tr>
                     <th>S.No.</th>
                     <th>Course Code</th>
-                    <th>Subject Name</th>
+                    <th className="subject-name">Subject Name</th>
                     <th>Credits</th>
                     <th>Max Mark</th>
                     <th>Pass Mark</th>

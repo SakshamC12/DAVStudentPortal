@@ -230,10 +230,14 @@ body {
     text-overflow: unset;
     vertical-align: top;
   }
+  .marks-table th.subject-name,
   .marks-table td.subject-name {
-    font-size: 0.95rem;
     min-width: 120px;
     max-width: 220px;
+    text-align: left;
+  }
+  .marks-table td.subject-name {
+    font-size: 0.88rem;
     padding: 0.5rem 0.7rem;
     word-break: break-word;
   }
