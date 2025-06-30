@@ -35,9 +35,12 @@ body {
 }
 
 .navbar-links {
-  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   justify-content: center;
   gap: 3rem;
+  flex: 1;
 }
 
 .navbar-right {
@@ -67,25 +70,9 @@ body {
 }
 
 .navbar-logout {
-  color: #fff;
-  background: linear-gradient(135deg, #a6192e 0%, #a6192e 100%);
-  border: none;
-  font-weight: 600;
-  transition: background 0.2s, color 0.2s;
-  cursor: pointer;
-  padding: 12px 28px;
-  font-size: 1.1rem;
-  border-radius: 10px;
-  min-width: 120px;
-  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.navbar-logout:hover {
-  background: #7d1423;
-  color: #fff;
 }
 
 .container {
