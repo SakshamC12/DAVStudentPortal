@@ -15,12 +15,17 @@ interface Student {
   department: string;
   year: number;
   dateOfBirth: string;
+  semester: number;
 }
 
 function App() {
   const [student, setStudent] = useState<Student | null>(() => {
     const stored = localStorage.getItem('student');
-    return stored ? JSON.parse(stored) : null;
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return { ...parsed, semester: parsed.semester ?? 1 };
+    }
+    return null;
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('student'));
 
