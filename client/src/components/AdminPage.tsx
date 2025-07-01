@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { Link } from 'react-router-dom';
 
 interface AdminPageProps {
   adminUser: any;
@@ -52,41 +53,41 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
             <table className="marks-table" style={{ minWidth: 900, width: '100%' }}>
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Student ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Department</th>
-                  <th>Year</th>
-                  <th>Semester</th>
-                  <th>Date of Birth</th>
-                  <th>Profile</th>
-                  <th>Marks</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>ID</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Student ID</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Name</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Email</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Department</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Year</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Semester</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Date of Birth</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Profile</th>
+                  <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Marks</th>
                 </tr>
               </thead>
               <tbody>
                 {students.map((student) => (
-                  <tr key={student.id}>
-                    <td>{student.id}</td>
-                    <td>{student.student_id}</td>
-                    <td>{student.name}</td>
-                    <td>{student.email}</td>
-                    <td>{student.department}</td>
-                    <td>{student.year}</td>
-                    <td>{student.semester}</td>
-                    <td>{student.date_of_birth}</td>
-                    <td>
+                  <tr key={student.id} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.id}</td>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.student_id}</td>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.name}</td>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.email}</td>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.department}</td>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.year}</td>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.semester}</td>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.date_of_birth}</td>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
                       {student.pfp_url ? (
                         <img src={student.pfp_url} alt="pfp" style={{ width: 40, height: 40, borderRadius: '50%' }} />
                       ) : (
                         'N/A'
                       )}
                     </td>
-                    <td>
-                      <a href={`/admin/profile/${student.student_id}`} className="btn btn-sm" style={{ background: '#a6192e', color: '#fff', marginRight: 4 }}>View Profile</a>
-                    </td>
-                    <td>
-                      <a href={`/admin/marks/${student.student_id}`} className="btn btn-sm" style={{ background: '#a6192e', color: '#fff' }}>View Marks</a>
+                    <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <Link to={`/admin/profile/${student.student_id}`} className="btn btn-sm" style={{ background: '#a6192e', color: '#fff' }}>View Profile</Link>
+                        <Link to={`/admin/marks/${student.student_id}`} className="btn btn-sm" style={{ background: '#a6192e', color: '#fff' }}>View Marks</Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

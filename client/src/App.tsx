@@ -8,6 +8,7 @@ import Header from './components/Header';
 import { supabase } from './supabaseClient';
 import AdminPage from './components/AdminPage';
 import SetPassword from './components/SetPassword';
+import AdminMarks from './components/AdminMarks';
 import './App.css';
 
 interface Student {
@@ -32,7 +33,10 @@ function App() {
     return null;
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('student'));
-  const [adminUser, setAdminUser] = useState<any>(null);
+  const [adminUser, setAdminUser] = useState<any>(() => {
+    const stored = localStorage.getItem('adminUser');
+    return stored ? JSON.parse(stored) : null;
+  });
 
   // Fetch latest student profile from Supabase
   const fetchLatestStudent = async (studentId: string, dateOfBirth: string) => {
@@ -71,6 +75,14 @@ function App() {
       }
     }
     // eslint-disable-next-line
+  }, []);
+
+  // On app mount, restore adminUser from localStorage if present
+  useEffect(() => {
+    const storedAdmin = localStorage.getItem('adminUser');
+    if (storedAdmin) {
+      setAdminUser(JSON.parse(storedAdmin));
+    }
   }, []);
 
   const handleLogin = async (studentData: Student) => {
@@ -220,7 +232,7 @@ function App() {
             />
             <Route path="/set-password" element={<SetPassword />} />
             <Route path="/admin/profile/:studentId" element={<AdminProfileWrapper />} />
-            <Route path="/admin/marks/:studentId" element={<AdminMarksWrapper />} />
+            <Route path="/admin/marks/:student_id" element={<AdminMarks />} />
           </Routes>
         </div>
       </div>

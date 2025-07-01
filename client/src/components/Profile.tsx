@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { User, Mail, Phone, MapPin, Calendar, BookOpen } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Student {
   id: number;
@@ -57,6 +58,7 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
   const [editGuardians, setEditGuardians] = useState<Guardian[]>([]);
   const [newGuardian, setNewGuardian] = useState<Partial<Guardian>>({ guardian_name: '', guardian_contact: '', relation: '' });
   const [uploading, setUploading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfile();
@@ -129,6 +131,21 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
     setEditMode(true);
     setSuccess('');
     setError('');
+    if (adminView && profile) {
+      setEditProfile({
+        name: profile.name || '',
+        email: profile.email || '',
+        department: profile.department || '',
+        year: profile.year || 1,
+        semester: profile.semester || 1,
+        date_of_birth: profile.date_of_birth || '',
+        gender: profile.gender || '',
+        blood_group: profile.blood_group || '',
+        secondary_email: profile.secondary_email || '',
+        phone: profile.phone || '',
+        address: profile.address || '',
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -153,6 +170,14 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
       const { error: updateError } = await supabase
         .from('students')
         .update({
+          name: editProfile.name,
+          email: editProfile.email,
+          department: editProfile.department,
+          year: editProfile.year,
+          semester: editProfile.semester,
+          date_of_birth: editProfile.date_of_birth,
+          gender: editProfile.gender,
+          blood_group: editProfile.blood_group,
           secondary_email: editProfile.secondary_email,
           phone: editProfile.phone,
           address: editProfile.address,
@@ -296,6 +321,15 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
   return (
     <div className="py-8">
       <div className="card" style={{ maxWidth: 800, margin: '0 auto', padding: 0 }}>
+        {adminView && (
+          <button
+            className="btn mb-4 ml-4"
+            style={{ background: '#a6192e', color: '#fff', margin: '1rem 0 0 1rem' }}
+            onClick={() => navigate('/admin')}
+          >
+            Back to Admin Dashboard
+          </button>
+        )}
         <div style={{ background: '#a6192e', color: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: '1.5rem 2rem 1rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {/* Profile Picture */}
           <div style={{ marginBottom: 16 }}>
@@ -368,27 +402,63 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Department</td>
-                <td>{profile?.department}</td>
+                <td>
+                  {editMode && adminView ? (
+                    <input type="text" name="department" className="form-input" value={editProfile.department || ''} onChange={handleProfileChange} style={{ width: '100%' }} />
+                  ) : (
+                    profile?.department
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Year</td>
-                <td>{profile?.year}</td>
+                <td>
+                  {editMode && adminView ? (
+                    <input type="number" name="year" className="form-input" value={editProfile.year || ''} onChange={handleProfileChange} style={{ width: '100%' }} min={1} />
+                  ) : (
+                    profile?.year
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Semester</td>
-                <td>{profile?.semester}</td>
+                <td>
+                  {editMode && adminView ? (
+                    <input type="number" name="semester" className="form-input" value={editProfile.semester || ''} onChange={handleProfileChange} style={{ width: '100%' }} min={1} />
+                  ) : (
+                    profile?.semester
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Date of Birth</td>
-                <td>{profile?.date_of_birth}</td>
+                <td>
+                  {editMode && adminView ? (
+                    <input type="date" name="date_of_birth" className="form-input" value={editProfile.date_of_birth || ''} onChange={handleProfileChange} style={{ width: '100%' }} />
+                  ) : (
+                    profile?.date_of_birth
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Gender</td>
-                <td>{profile?.gender || 'Not provided'}</td>
+                <td>
+                  {editMode && adminView ? (
+                    <input type="text" name="gender" className="form-input" value={editProfile.gender || ''} onChange={handleProfileChange} style={{ width: '100%' }} />
+                  ) : (
+                    profile?.gender || 'Not provided'
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Blood Group</td>
-                <td>{profile?.blood_group || 'Not provided'}</td>
+                <td>
+                  {editMode && adminView ? (
+                    <input type="text" name="blood_group" className="form-input" value={editProfile.blood_group || ''} onChange={handleProfileChange} style={{ width: '100%' }} />
+                  ) : (
+                    profile?.blood_group || 'Not provided'
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Phone Number</td>

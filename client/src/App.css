@@ -241,4 +241,20 @@ body {
     padding: 0.5rem 0.7rem;
     word-break: break-word;
   }
+}
+
+.login-toggle-btn {
+  background: #a6192e;
+  color: #fff;
+  border: 1.5px solid #222;
+  outline: none;
+  min-width: 150px;
+  margin: 0 4px;
+  box-shadow: 0 2px 8px rgba(166,25,46,0.08);
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.login-toggle-btn:hover, .login-toggle-btn.active {
+  background: #fff;
+  color: #a6192e;
+  border: 1.5px solid #a6192e;
 } 

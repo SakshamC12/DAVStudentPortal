@@ -81,44 +81,56 @@ const Login: React.FC<LoginProps> = ({ onLogin, onAdminLogin }) => {
   };
 
   const handleStudentIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStudentId((e.target as HTMLInputElement).value);
+    setStudentId(e.target.value);
   };
 
   const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDateOfBirth((e.target as HTMLInputElement).value);
+    setDateOfBirth(e.target.value);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="card" style={{ maxWidth: '400px', width: '100%' }}>
-        <div className="text-center mb-4">
-          <div className="flex justify-center mb-4">
-            <GraduationCap size={48} color="#a6192e" />
-          </div>
-          <h1 className="text-2xl font-bold mb-2" style={{ color: '#a6192e' }}>DAV Student Portal</h1>
-          <p className="text-gray-600">Sign in to access your academic records</p>
-          <div className="flex justify-center mt-4 gap-2">
+      <div className="card" style={{ maxWidth: '480px', width: '100%' }}>
+        <div className="text-center flex items-center justify-center gap-3" style={{ background: '#a6192e', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: '1.2rem 2rem 0.5rem 2rem' }}>
+          <img src="/DavLogo.svg" alt="DAV Logo" style={{ height: 48, width: 48 }} />
+          <h1 className="text-3xl font-extrabold" style={{ color: '#fff', letterSpacing: 1, marginBottom: 0 }}>DAV Student Portal</h1>
+        </div>
+        <div style={{ background: '#fff', color: '#222', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: '2rem 2rem 1.2rem 2rem', marginBottom: 0 }}>
+          <h2 className="text-xl font-semibold mb-2" style={{ fontWeight: 600 }}>Sign in to access your academic records</h2>
+          <div className="flex justify-center mt-4 gap-6">
             <button
-              className={`px-4 py-2 rounded font-semibold transition-colors ${!adminMode ? '' : 'opacity-70'}`}
-              style={{ background: !adminMode ? '#a6192e' : '#a6192e', color: '#fff', border: 'none', outline: 'none', boxShadow: !adminMode ? '0 2px 8px rgba(166,25,46,0.08)' : 'none' }}
+              className={`login-toggle-btn px-6 py-3 rounded transition-colors font-bold${!adminMode ? ' active' : ''}`}
               type="button"
               onClick={() => setAdminMode(false)}
+              style={{
+                background: !adminMode ? '#a6192e' : '#fff',
+                color: !adminMode ? '#fff' : '#a6192e',
+                border: '2px solid #fff',
+                outline: '2px solid #a6192e',
+                boxShadow: !adminMode ? '0 2px 8px rgba(166,25,46,0.08)' : 'none',
+              }}
             >
               Student Login
             </button>
             <button
-              className={`px-4 py-2 rounded font-semibold transition-colors ${adminMode ? '' : 'opacity-70'}`}
-              style={{ background: adminMode ? '#a6192e' : '#a6192e', color: '#fff', border: 'none', outline: 'none', boxShadow: adminMode ? '0 2px 8px rgba(166,25,46,0.08)' : 'none' }}
+              className={`login-toggle-btn px-6 py-3 rounded transition-colors font-bold${adminMode ? ' active' : ''}`}
               type="button"
               onClick={() => setAdminMode(true)}
+              style={{
+                background: adminMode ? '#a6192e' : '#fff',
+                color: adminMode ? '#fff' : '#a6192e',
+                border: '2px solid #fff',
+                outline: '2px solid #a6192e',
+                boxShadow: adminMode ? '0 2px 8px rgba(166,25,46,0.08)' : 'none',
+              }}
             >
-              <Shield size={16} className="inline mr-1" /> Admin Login
+              <Shield size={18} className="inline mr-2" /> Admin Login
             </button>
           </div>
         </div>
 
         {error && (
-          <div className="alert alert-error mb-4 text-red-600 text-sm text-center">
+          <div className="alert alert-error mb-4 text-sm text-center">
             {error}
           </div>
         )}
@@ -165,7 +177,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onAdminLogin }) => {
                   type="email"
                   className="form-input"
                   value={adminEmail}
-                  onChange={e => setAdminEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAdminEmail(e.target.value)}
                   placeholder="Enter admin email"
                   required
                 />
@@ -179,7 +191,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onAdminLogin }) => {
                   type="password"
                   className="form-input"
                   value={adminPassword}
-                  onChange={e => setAdminPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAdminPassword(e.target.value)}
                   placeholder="Enter password"
                   required
                 />
