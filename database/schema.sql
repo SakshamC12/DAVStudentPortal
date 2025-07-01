@@ -120,6 +120,7 @@ SELECT
     s.pass_mark,
     m.marks_obtained,
     m.exam_date,
+    m.semester,
     CASE
         WHEN m.marks_obtained < s.pass_mark THEN 'F'
         WHEN (m.marks_obtained / s.max_mark) * 100 >= 85 THEN 'A'

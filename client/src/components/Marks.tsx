@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { BookOpen, TrendingUp, Calendar } from 'lucide-react';
+import { BookOpen, TrendingUp, Calendar, Filter } from 'lucide-react';
 
 interface Student {
   id: number;
@@ -22,7 +22,7 @@ interface MarkDisplay {
   exam_date: string;
   grade: string;
   result: string;
-  semester?: number; // Optional, if you want to group by semester
+  semester: number;
 }
 
 interface MarksProps {
@@ -31,13 +31,20 @@ interface MarksProps {
 
 const Marks: React.FC<MarksProps> = ({ student }) => {
   const [marks, setMarks] = useState<MarkDisplay[]>([]);
+  const [filteredMarks, setFilteredMarks] = useState<MarkDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState<string>('all');
 
   useEffect(() => {
     fetchMarks();
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    filterMarksBySemester();
+    // eslint-disable-next-line
+  }, [marks, selectedSemester]);
 
   const fetchMarks = async () => {
     try {
@@ -55,6 +62,21 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const filterMarksBySemester = () => {
+    if (selectedSemester === 'all') {
+      setFilteredMarks(marks);
+    } else {
+      const semester = parseInt(selectedSemester);
+      const filtered = marks.filter(mark => mark.semester === semester);
+      setFilteredMarks(filtered);
+    }
+  };
+
+  const getAvailableSemesters = () => {
+    const semesters = [...new Set(marks.map(mark => mark.semester))].sort((a, b) => a - b);
+    return semesters;
   };
 
   if (loading) {
@@ -97,44 +119,80 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
               <p className="text-gray-600">Your marks will appear here once they are published by your department.</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', background: '#fff', borderRadius: 16, padding: '1rem', marginTop: '1rem' }}>
-              <table className="marks-table" style={{ minWidth: 700, width: '100%' }}>
-                <thead>
-                  <tr>
-                    <th>S.No.</th>
-                    <th>Course Code</th>
-                    <th className="subject-name">Subject Name</th>
-                    <th>Credits</th>
-                    <th>Max Mark</th>
-                    <th>Pass Mark</th>
-                    <th>Marks Obtained</th>
-                    <th>Exam Date</th>
-                    <th>Grade</th>
-                    <th>Result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {marks.map((mark, idx) => (
-                    <tr key={mark.subject_code}>
-                      <td>{idx + 1}</td>
-                      <td>{mark.subject_code}</td>
-                      <td className="subject-name">{mark.subject_name}</td>
-                      <td>{mark.credits}</td>
-                      <td>{mark.max_mark}</td>
-                      <td>{mark.pass_mark}</td>
-                      <td>{mark.marks_obtained}</td>
-                      <td>{mark.exam_date ? new Date(mark.exam_date).toLocaleDateString() : '-'}</td>
-                      <td>
-                        <span className={`badge ${mark.grade === 'A' ? 'badge-success' : mark.grade === 'B' ? 'badge-warning' : mark.grade === 'C' ? 'badge-warning' : mark.grade === 'F' ? 'badge-danger' : ''}`}>{mark.grade}</span>
-                      </td>
-                      <td>
-                        <span className={`badge ${mark.result === 'PASS' ? 'badge-success' : 'badge-danger'}`}>{mark.result}</span>
-                      </td>
-                    </tr>
+            <>
+              {/* Semester Filter */}
+              <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Filter size={20} style={{ color: '#a6192e' }} />
+                  <span style={{ fontWeight: 600, color: '#333' }}>Filter by Semester:</span>
+                </div>
+                <select
+                  value={selectedSemester}
+                  onChange={(e) => setSelectedSemester(e.currentTarget.value)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    border: '2px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    backgroundColor: '#fff',
+                    color: '#333',
+                    cursor: 'pointer',
+                    minWidth: '150px'
+                  }}
+                >
+                  <option value="all">All Semesters</option>
+                  {getAvailableSemesters().map(semester => (
+                    <option key={semester} value={semester}>
+                      Semester {semester}
+                    </option>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </select>
+                <span style={{ color: '#666', fontSize: '0.9rem' }}>
+                  Showing {filteredMarks.length} of {marks.length} subjects
+                </span>
+              </div>
+
+              <div style={{ overflowX: 'auto', background: '#fff', borderRadius: 16, padding: '1rem', marginTop: '1rem' }}>
+                <table className="marks-table" style={{ minWidth: 700, width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th>S.No.</th>
+                      <th>Course Code</th>
+                      <th className="subject-name">Subject Name</th>
+                      <th>Credits</th>
+                      <th>Max Mark</th>
+                      <th>Pass Mark</th>
+                      <th>Marks Obtained</th>
+                      <th>Exam Date</th>
+                      <th style={{ padding: '0 16px', textAlign: 'center' }}>Semester</th>
+                      <th style={{ textAlign: 'center', padding: '0 16px' }}>Grade</th>
+                      <th style={{ textAlign: 'center', padding: '0 16px' }}>Result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMarks.map((mark, idx) => (
+                      <tr key={mark.subject_code}>
+                        <td>{idx + 1}</td>
+                        <td>{mark.subject_code}</td>
+                        <td className="subject-name">{mark.subject_name}</td>
+                        <td style={{ textAlign: 'center' }}>{mark.credits}</td>
+                        <td style={{ textAlign: 'center' }}>{mark.max_mark}</td>
+                        <td style={{ textAlign: 'center' }}>{mark.pass_mark}</td>
+                        <td style={{ textAlign: 'center' }}>{mark.marks_obtained}</td>
+                        <td>{mark.exam_date ? new Date(mark.exam_date).toLocaleDateString() : '-'}</td>
+                        <td style={{ textAlign: 'center', padding: '0 16px' }}>{mark.semester}</td>
+                        <td style={{ textAlign: 'center', padding: '0 16px' }}>
+                          <span className={`badge ${mark.grade === 'A' ? 'badge-success' : mark.grade === 'B' ? 'badge-warning' : mark.grade === 'C' ? 'badge-warning' : mark.grade === 'F' ? 'badge-danger' : ''}`}>{mark.grade}</span>
+                        </td>
+                        <td style={{ textAlign: 'center', padding: '0 16px' }}>
+                          <span className={`badge ${mark.result === 'PASS' ? 'badge-success' : 'badge-danger'}`}>{mark.result}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       </div>
