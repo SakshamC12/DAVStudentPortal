@@ -347,7 +347,7 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
                   ) : (
                     profile?.email
                   )}
-                <td>{profile?.email}</td>
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Secondary Email</td>
