@@ -60,7 +60,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
                   <th>Year</th>
                   <th>Semester</th>
                   <th>Date of Birth</th>
-                  <th>Profile Picture</th>
+                  <th>Profile</th>
+                  <th>Marks</th>
                 </tr>
               </thead>
               <tbody>
@@ -80,6 +81,12 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
                       ) : (
                         'N/A'
                       )}
+                    </td>
+                    <td>
+                      <a href={`/admin/profile/${student.student_id}`} className="btn btn-sm" style={{ background: '#a6192e', color: '#fff', marginRight: 4 }}>View Profile</a>
+                    </td>
+                    <td>
+                      <a href={`/admin/marks/${student.student_id}`} className="btn btn-sm" style={{ background: '#a6192e', color: '#fff' }}>View Marks</a>
                     </td>
                   </tr>
                 ))}

@@ -42,9 +42,10 @@ interface Guardian {
 interface ProfileProps {
   student: Student;
   onProfileUpdate: (updatedStudent: Student) => void;
+  adminView?: boolean;
 }
 
-const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate }) => {
+const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }) => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [loading, setLoading] = useState(true);
@@ -326,7 +327,13 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate }) => {
             <tbody>
               <tr>
                 <td className="font-semibold" style={{ width: '220px', padding: '12px 8px' }}>Full Name</td>
-                <td>{profile?.name}</td>
+                <td>
+                  {editMode && adminView ? (
+                    <input type="text" name="name" className="form-input" value={editProfile.name || ''} onChange={handleProfileChange} style={{ width: '100%' }} />
+                  ) : (
+                    profile?.name
+                  )}
+                </td>
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Student ID</td>
@@ -334,6 +341,12 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate }) => {
               </tr>
               <tr>
                 <td className="font-semibold" style={{ padding: '12px 8px' }}>Email Address</td>
+                <td>
+                  {editMode && adminView ? (
+                    <input type="email" name="email" className="form-input" value={editProfile.email || ''} onChange={handleProfileChange} style={{ width: '100%' }} />
+                  ) : (
+                    profile?.email
+                  )}
                 <td>{profile?.email}</td>
               </tr>
               <tr>

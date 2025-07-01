@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Marks from './components/Marks';
@@ -105,6 +105,60 @@ function App() {
     localStorage.removeItem('adminUser');
   };
 
+  // Admin wrapper for Profile
+  const AdminProfileWrapper = () => {
+    const { studentId } = useParams();
+    const [student, setStudent] = React.useState<Student | null>(null);
+    React.useEffect(() => {
+      const fetchStudent = async () => {
+        const { data } = await supabase.from('students').select('*').eq('student_id', studentId).single();
+        if (data) {
+          setStudent({
+            id: data.id,
+            studentId: data.student_id,
+            name: data.name,
+            email: data.email,
+            department: data.department,
+            year: data.year,
+            dateOfBirth: data.date_of_birth,
+            semester: data.semester,
+            pfp_url: data.pfp_url,
+          });
+        }
+      };
+      fetchStudent();
+    }, [studentId]);
+    if (!student) return <div>Loading...</div>;
+    return <Profile student={student} onProfileUpdate={() => {}} adminView />;
+  };
+
+  // Admin wrapper for Marks
+  const AdminMarksWrapper = () => {
+    const { studentId } = useParams();
+    const [student, setStudent] = React.useState<Student | null>(null);
+    React.useEffect(() => {
+      const fetchStudent = async () => {
+        const { data } = await supabase.from('students').select('*').eq('student_id', studentId).single();
+        if (data) {
+          setStudent({
+            id: data.id,
+            studentId: data.student_id,
+            name: data.name,
+            email: data.email,
+            department: data.department,
+            year: data.year,
+            dateOfBirth: data.date_of_birth,
+            semester: data.semester,
+            pfp_url: data.pfp_url,
+          });
+        }
+      };
+      fetchStudent();
+    }, [studentId]);
+    if (!student) return <div>Loading...</div>;
+    return <Marks student={student} adminView />;
+  };
+
   return (
     <Router>
       <div className="App">
@@ -165,6 +219,8 @@ function App() {
               } 
             />
             <Route path="/set-password" element={<SetPassword />} />
+            <Route path="/admin/profile/:studentId" element={<AdminProfileWrapper />} />
+            <Route path="/admin/marks/:studentId" element={<AdminMarksWrapper />} />
           </Routes>
         </div>
       </div>
