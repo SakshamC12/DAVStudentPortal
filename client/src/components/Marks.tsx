@@ -27,9 +27,10 @@ interface MarkDisplay {
 
 interface MarksProps {
   student: Student;
+  adminView?: boolean;
 }
 
-const Marks: React.FC<MarksProps> = ({ student }) => {
+const Marks: React.FC<MarksProps> = ({ student, adminView }) => {
   const [marks, setMarks] = useState<MarkDisplay[]>([]);
   const [filteredMarks, setFilteredMarks] = useState<MarkDisplay[]>([]);
   const [loading, setLoading] = useState(true);
