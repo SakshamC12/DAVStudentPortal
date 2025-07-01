@@ -19,7 +19,7 @@ const SetPassword: React.FC = () => {
   useEffect(() => {
     const trySession = async () => {
       if (accessToken && (type === 'invite' || type === 'recovery')) {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(accessToken);
+        const { data, error } = await supabase.auth.exchangeCodeForSession(accessToken as string);
         if (data?.session && !error) {
           setValidToken(true);
         } else {
