@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Marks from './components/Marks';
 import Profile from './components/Profile';
 import Header from './components/Header';
+import { supabase } from './supabaseClient';
 import './App.css';
 
 interface Student {
@@ -30,10 +31,54 @@ function App() {
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('student'));
 
-  const handleLogin = (studentData: Student) => {
-    setStudent(studentData);
+  // Fetch latest student profile from Supabase
+  const fetchLatestStudent = async (studentId: string, dateOfBirth: string) => {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .eq('student_id', studentId)
+      .eq('date_of_birth', dateOfBirth)
+      .single();
+    if (data && !error) {
+      const latestStudent: Student = {
+        id: data.id,
+        studentId: data.student_id,
+        name: data.name,
+        email: data.email,
+        department: data.department,
+        year: data.year,
+        dateOfBirth: data.date_of_birth,
+        semester: data.semester,
+        pfp_url: data.pfp_url,
+      };
+      setStudent(latestStudent);
+      localStorage.setItem('student', JSON.stringify(latestStudent));
+      return latestStudent;
+    }
+    return null;
+  };
+
+  // On app mount, if student in localStorage, fetch latest profile
+  useEffect(() => {
+    const stored = localStorage.getItem('student');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.studentId && parsed.dateOfBirth) {
+        fetchLatestStudent(parsed.studentId, parsed.dateOfBirth);
+      }
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  const handleLogin = async (studentData: Student) => {
+    // Fetch latest profile after login
+    const latest = await fetchLatestStudent(studentData.studentId, studentData.dateOfBirth);
     setIsAuthenticated(true);
-    localStorage.setItem('student', JSON.stringify(studentData));
+    if (!latest) {
+      // fallback if fetch fails
+      setStudent(studentData);
+      localStorage.setItem('student', JSON.stringify(studentData));
+    }
   };
 
   const handleLogout = () => {

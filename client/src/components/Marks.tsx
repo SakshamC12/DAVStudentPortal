@@ -156,14 +156,14 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
                 <table className="marks-table" style={{ minWidth: 700, width: '100%' }}>
                   <thead>
                     <tr>
-                      <th>S.No.</th>
-                      <th>Course Code</th>
-                      <th className="subject-name">Subject Name</th>
-                      <th>Credits</th>
-                      <th>Max Mark</th>
-                      <th>Pass Mark</th>
-                      <th>Marks Obtained</th>
-                      <th>Exam Date</th>
+                      <th style={{ minWidth: 40, textAlign: 'left', paddingRight: 16 }}>S.No.</th>
+                      <th style={{ minWidth: 120, textAlign: 'left', paddingRight: 16 }}>Course Code</th>
+                      <th className="subject-name" style={{ minWidth: 260, textAlign: 'left', paddingRight: 24 }}>Subject Name</th>
+                      <th style={{ minWidth: 80, textAlign: 'center' }}>Credits</th>
+                      <th style={{ minWidth: 100, textAlign: 'center' }}>Max Mark</th>
+                      <th style={{ minWidth: 100, textAlign: 'center' }}>Pass Mark</th>
+                      <th style={{ minWidth: 120, textAlign: 'center' }}>Marks Obtained</th>
+                      <th style={{ minWidth: 120, textAlign: 'center' }}>Exam Date</th>
                       <th style={{ padding: '0 16px', textAlign: 'center' }}>Semester</th>
                       <th style={{ textAlign: 'center', padding: '0 16px' }}>Grade</th>
                       <th style={{ textAlign: 'center', padding: '0 16px' }}>Result</th>
@@ -172,14 +172,14 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
                   <tbody>
                     {filteredMarks.map((mark, idx) => (
                       <tr key={mark.subject_code}>
-                        <td>{idx + 1}</td>
-                        <td>{mark.subject_code}</td>
-                        <td className="subject-name">{mark.subject_name}</td>
-                        <td style={{ textAlign: 'center' }}>{mark.credits}</td>
-                        <td style={{ textAlign: 'center' }}>{mark.max_mark}</td>
-                        <td style={{ textAlign: 'center' }}>{mark.pass_mark}</td>
-                        <td style={{ textAlign: 'center' }}>{mark.marks_obtained}</td>
-                        <td>{mark.exam_date ? new Date(mark.exam_date).toLocaleDateString() : '-'}</td>
+                        <td style={{ textAlign: 'left', minWidth: 40, paddingRight: 16 }}>{idx + 1}</td>
+                        <td style={{ textAlign: 'left', minWidth: 120, paddingRight: 16 }}>{mark.subject_code}</td>
+                        <td className="subject-name" style={{ textAlign: 'left', minWidth: 260, paddingRight: 24 }}>{mark.subject_name}</td>
+                        <td style={{ textAlign: 'center', minWidth: 80 }}>{mark.credits}</td>
+                        <td style={{ textAlign: 'center', minWidth: 100 }}>{mark.max_mark}</td>
+                        <td style={{ textAlign: 'center', minWidth: 100 }}>{mark.pass_mark}</td>
+                        <td style={{ textAlign: 'center', minWidth: 120 }}>{mark.marks_obtained}</td>
+                        <td style={{ textAlign: 'center', minWidth: 120 }}>{mark.exam_date ? new Date(mark.exam_date).toLocaleDateString() : '-'}</td>
                         <td style={{ textAlign: 'center', padding: '0 16px' }}>{mark.semester}</td>
                         <td style={{ textAlign: 'center', padding: '0 16px' }}>
                           <span className={`badge ${mark.grade === 'A' ? 'badge-success' : mark.grade === 'B' ? 'badge-warning' : mark.grade === 'C' ? 'badge-warning' : mark.grade === 'F' ? 'badge-danger' : ''}`}>{mark.grade}</span>
