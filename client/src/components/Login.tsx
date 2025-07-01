@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { GraduationCap, Calendar, User, Lock, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Student {
   id: number;
@@ -26,6 +27,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onAdminLogin }) => {
   const [adminPassword, setAdminPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +44,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onAdminLogin }) => {
         setError('Invalid admin credentials');
       } else {
         onAdminLogin(data.user);
+        navigate('/admin');
       }
       setLoading(false);
       return;
