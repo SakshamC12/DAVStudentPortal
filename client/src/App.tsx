@@ -6,6 +6,8 @@ import Marks from './components/Marks';
 import Profile from './components/Profile';
 import Header from './components/Header';
 import { supabase } from './supabaseClient';
+import AdminPage from './components/AdminPage';
+import SetPassword from './components/SetPassword';
 import './App.css';
 
 interface Student {
@@ -30,6 +32,7 @@ function App() {
     return null;
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('student'));
+  const [adminUser, setAdminUser] = useState<any>(null);
 
   // Fetch latest student profile from Supabase
   const fetchLatestStudent = async (studentId: string, dateOfBirth: string) => {
@@ -92,6 +95,16 @@ function App() {
     localStorage.setItem('student', JSON.stringify(updatedStudent));
   };
 
+  const handleAdminLogin = (user: any) => {
+    setAdminUser(user);
+    localStorage.setItem('adminUser', JSON.stringify(user));
+  };
+
+  const handleAdminLogout = () => {
+    setAdminUser(null);
+    localStorage.removeItem('adminUser');
+  };
+
   return (
     <Router>
       <div className="App">
@@ -107,7 +120,7 @@ function App() {
                 isAuthenticated ? (
                   <Navigate to="/dashboard" replace />
                 ) : (
-                  <Login onLogin={handleLogin} />
+                  <Login onLogin={handleLogin} onAdminLogin={handleAdminLogin} />
                 )
               } 
             />
@@ -141,6 +154,17 @@ function App() {
                 )
               } 
             />
+            <Route 
+              path="/admin" 
+              element={
+                adminUser ? (
+                  <AdminPage adminUser={adminUser} onLogout={handleAdminLogout} />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } 
+            />
+            <Route path="/set-password" element={<SetPassword />} />
           </Routes>
         </div>
       </div>

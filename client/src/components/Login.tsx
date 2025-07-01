@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { GraduationCap, Calendar, User, Lock } from 'lucide-react';
+import { GraduationCap, Calendar, User, Lock, Shield } from 'lucide-react';
 
 interface Student {
   id: number;
@@ -15,11 +15,15 @@ interface Student {
 
 interface LoginProps {
   onLogin: (student: Student) => void;
+  onAdminLogin: (user: any) => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLogin, onAdminLogin }) => {
   const [studentId, setStudentId] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
+  const [adminMode, setAdminMode] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -28,6 +32,22 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setLoading(true);
     setError('');
 
+    if (adminMode) {
+      // Admin login with Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: adminEmail,
+        password: adminPassword,
+      });
+      if (error || !data.user) {
+        setError('Invalid admin credentials');
+      } else {
+        onAdminLogin(data.user);
+      }
+      setLoading(false);
+      return;
+    }
+
+    // Student login as before
     try {
       const { data: student, error } = await supabase
         .from('students')
@@ -76,6 +96,23 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <p className="text-gray-600">Sign in to access your academic records</p>
         </div>
 
+        <div className="flex justify-center mb-4">
+          <button
+            className={`btn btn-sm mr-2 ${!adminMode ? 'btn-primary' : 'btn-outline'}`}
+            type="button"
+            onClick={() => setAdminMode(false)}
+          >
+            Student Login
+          </button>
+          <button
+            className={`btn btn-sm ${adminMode ? 'btn-primary' : 'btn-outline'}`}
+            type="button"
+            onClick={() => setAdminMode(true)}
+          >
+            <Shield size={16} className="inline mr-1" /> Admin Login
+          </button>
+        </div>
+
         {error && (
           <div className="alert alert-error mb-4 text-red-600 text-sm text-center">
             {error}
@@ -83,34 +120,68 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">
-              <User size={16} className="inline mr-2" />
-              Student ID
-            </label>
-            <input
-              type="text"
-              className="form-input"
-              value={studentId}
-              onChange={handleStudentIdChange}
-              placeholder="Enter your Student ID"
-              required
-            />
-          </div>
-
-          <div className="form-group mt-4">
-            <label className="form-label">
-              <Calendar size={16} className="inline mr-2" />
-              Date of Birth
-            </label>
-            <input
-              type="date"
-              className="form-input"
-              value={dateOfBirth}
-              onChange={handleDobChange}
-              required
-            />
-          </div>
+          {!adminMode ? (
+            <>
+              <div className="form-group">
+                <label className="form-label">
+                  <User size={16} className="inline mr-2" />
+                  Student ID
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={studentId}
+                  onChange={handleStudentIdChange}
+                  placeholder="Enter your Student ID"
+                  required
+                />
+              </div>
+              <div className="form-group mt-4">
+                <label className="form-label">
+                  <Calendar size={16} className="inline mr-2" />
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={dateOfBirth}
+                  onChange={handleDobChange}
+                  required
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="form-group">
+                <label className="form-label">
+                  <User size={16} className="inline mr-2" />
+                  Admin Email
+                </label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={adminEmail}
+                  onChange={e => setAdminEmail(e.target.value)}
+                  placeholder="Enter admin email"
+                  required
+                />
+              </div>
+              <div className="form-group mt-4">
+                <label className="form-label">
+                  <Lock size={16} className="inline mr-2" />
+                  Password
+                </label>
+                <input
+                  type="password"
+                  className="form-input"
+                  value={adminPassword}
+                  onChange={e => setAdminPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
+            </>
+          )}
 
           <button
             type="submit"
@@ -132,7 +203,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </form>
 
         <div className="text-center mt-6 text-sm text-gray-500">
-          <p>Use your Student ID and Date of Birth to access your records</p>
+          <p>{!adminMode ? 'Use your Student ID and Date of Birth to access your records' : 'Admin access only'}</p>
         </div>
       </div>
     </div>

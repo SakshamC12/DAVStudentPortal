@@ -163,7 +163,7 @@ const Marks: React.FC<MarksProps> = ({ student }) => {
                       <th style={{ minWidth: 100, textAlign: 'center' }}>Max Mark</th>
                       <th style={{ minWidth: 100, textAlign: 'center' }}>Pass Mark</th>
                       <th style={{ minWidth: 120, textAlign: 'center' }}>Marks Obtained</th>
-                      <th style={{ minWidth: 120, textAlign: 'center' }}>Exam Date</th>
+                      <th style={{ minWidth: 120, textAlign: 'center' }}>Date Attended</th>
                       <th style={{ padding: '0 16px', textAlign: 'center' }}>Semester</th>
                       <th style={{ textAlign: 'center', padding: '0 16px' }}>Grade</th>
                       <th style={{ textAlign: 'center', padding: '0 16px' }}>Result</th>
