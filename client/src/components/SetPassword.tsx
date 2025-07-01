@@ -4,11 +4,9 @@ import { supabase } from '../supabaseClient';
 
 const SetPassword: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const accessToken = searchParams.get('access_token');
-  const type = searchParams.get('type');
-
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const accessToken = hashParams.get('access_token');
+  const type = hashParams.get('type');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
