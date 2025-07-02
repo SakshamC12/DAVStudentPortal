@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, Home, BookOpen, User, Menu, X } from 'lucide-react';
+import { LogOut, Home, BookOpen, User, Menu, X, Library } from 'lucide-react';
 
 interface Student {
   id: number;
@@ -24,6 +24,7 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
     { path: '/marks', label: 'Marks', icon: BookOpen },
+    { path: '/library', label: 'Library', icon: Library },
     { path: '/profile', label: 'Profile', icon: User },
   ];
 

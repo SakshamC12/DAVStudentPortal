@@ -4,6 +4,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Marks from './components/Marks';
 import Profile from './components/Profile';
+import Library from './components/Library';
 import Header from './components/Header';
 import { supabase } from './supabaseClient';
 import AdminPage from './components/AdminPage';
@@ -215,6 +216,16 @@ function App() {
               element={
                 isAuthenticated ? (
                   <Profile student={student!} onProfileUpdate={handleProfileUpdate} />
+                ) : (
+                  <Navigate to="/" replace />
+                )
+              } 
+            />
+            <Route 
+              path="/library" 
+              element={
+                isAuthenticated ? (
+                  <Library student={student!} />
                 ) : (
                   <Navigate to="/" replace />
                 )

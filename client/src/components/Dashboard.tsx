@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, User, TrendingUp, Calendar } from 'lucide-react';
+import { BookOpen, User, TrendingUp, Calendar, Library } from 'lucide-react';
 
 interface Student {
   id: number;
@@ -25,6 +25,13 @@ const Dashboard: React.FC<DashboardProps> = ({ student }) => {
       icon: BookOpen,
       path: '/marks',
       color: 'bg-blue-500'
+    },
+    {
+      title: 'Library',
+      description: 'View your borrowed books',
+      icon: Library,
+      path: '/library',
+      color: 'bg-purple-500'
     },
     {
       title: 'Profile',
