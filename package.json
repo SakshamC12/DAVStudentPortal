@@ -23,6 +23,8 @@
     "concurrently": "^8.2.2"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.50.2"
+    "@supabase/supabase-js": "^2.50.2",
+    "antd": "^5.26.4",
+    "xlsx": "^0.18.5"
   }
 }

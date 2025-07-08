@@ -72,7 +72,7 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
     try {
       const { data: profile, error: profileError } = await supabase
         .from('students')
-        .select('*')
+        .select('id, student_id, name, email, department, year, semester, date_of_birth, phone, address, gender, blood_group, secondary_email, pfp_url')
         .eq('student_id', student.studentId)
         .eq('date_of_birth', student.dateOfBirth)
         .single();
@@ -90,7 +90,7 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
       // Fetch guardians
       const { data: guardians, error: guardiansError } = await supabase
         .from('guardians')
-        .select('*')
+        .select('id, student_id, guardian_name, guardian_contact, relation')
         .eq('student_id', profile.id);
       if (!guardiansError && guardians) {
         setGuardians(guardians);
@@ -216,7 +216,7 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
       // Fetch updated student and call onProfileUpdate
       const { data: updatedStudent } = await supabase
         .from('students')
-        .select('*')
+        .select('id, student_id, name, email, department, year, semester, date_of_birth, pfp_url')
         .eq('id', profile!.id)
         .single();
       if (updatedStudent) {
@@ -273,7 +273,7 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
       // Fetch updated student and call onProfileUpdate
       const { data: updatedStudent } = await supabase
         .from('students')
-        .select('*')
+        .select('id, student_id, name, email, department, year, semester, date_of_birth, pfp_url')
         .eq('id', profile.id)
         .single();
       if (updatedStudent) {
@@ -301,8 +301,19 @@ const Profile: React.FC<ProfileProps> = ({ student, onProfileUpdate, adminView }
   if (loading) {
     return (
       <div className="py-8">
-        <div className="loading">
-          <div className="spinner"></div>
+        <div className="card" style={{ maxWidth: 800, margin: '0 auto', padding: 0 }}>
+          <div style={{ background: '#a6192e', color: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: '1.5rem 2rem 1rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ width: 110, height: 110, borderRadius: '50%', background: '#eee', margin: '0 auto' }} />
+            </div>
+            <div style={{ width: 220, height: 32, background: '#eee', borderRadius: 8, marginBottom: 8 }} />
+            <div style={{ width: 180, height: 20, background: '#eee', borderRadius: 8, marginBottom: 8 }} />
+          </div>
+          <div style={{ padding: '2rem' }}>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} style={{ width: '100%', height: 28, background: '#eee', borderRadius: 8, marginBottom: 18 }} />
+            ))}
+          </div>
         </div>
       </div>
     );

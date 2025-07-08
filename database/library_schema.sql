@@ -73,4 +73,31 @@ INSERT INTO book_borrowings (book_id, student_id, issue_date, return_date) VALUE
 -- Update available copies after borrowings
 UPDATE books SET available_copies = available_copies - 1 WHERE id IN (
     SELECT book_id FROM book_borrowings WHERE actual_return_date IS NULL
-); 
+);
+
+-- Book requests table (pending/approved/denied requests by students)
+CREATE TABLE book_requests (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    book_id UUID REFERENCES books(id) ON DELETE CASCADE,
+    student_id TEXT REFERENCES students(student_id) ON DELETE CASCADE,
+    requested_duration TEXT NOT NULL, -- e.g., '1 month', '3 weeks', etc.
+    status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'denied'
+    request_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    approval_date DATE, -- set when approved
+    return_date DATE -- calculated on approval
+);
+
+CREATE INDEX idx_book_requests_student_id ON book_requests(student_id);
+CREATE INDEX idx_book_requests_book_id ON book_requests(book_id);
+CREATE INDEX idx_book_requests_status ON book_requests(status);
+
+ALTER TABLE book_requests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Book requests are viewable by all" ON book_requests
+    FOR SELECT USING (true);
+
+CREATE POLICY "Students can insert book requests" ON book_requests
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admins can update book requests" ON book_requests
+    FOR UPDATE USING (true); 

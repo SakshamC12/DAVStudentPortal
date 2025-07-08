@@ -9,7 +9,6 @@ import Header from './components/Header';
 import { supabase } from './supabaseClient';
 import AdminPage from './components/AdminPage';
 import SetPassword from './components/SetPassword';
-import AdminMarks from './components/AdminMarks';
 import './App.css';
 
 interface Student {
@@ -243,7 +242,6 @@ function App() {
             />
             <Route path="/set-password" element={<SetPassword />} />
             <Route path="/admin/profile/:studentId" element={<AdminProfileWrapper />} />
-            <Route path="/admin/marks/:student_id" element={<AdminMarks />} />
           </Routes>
         </div>
       </div>

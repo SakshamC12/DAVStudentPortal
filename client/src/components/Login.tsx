@@ -201,20 +201,34 @@ const Login: React.FC<LoginProps> = ({ onLogin, onAdminLogin }) => {
 
           <button
             type="submit"
-            className="btn w-full mt-6"
+            className="btn mt-6 w-full"
+            style={{
+              background: '#a6192e',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '1.2rem',
+              borderRadius: 12,
+              border: '2px solid #a6192e',
+              padding: '1.1rem 0',
+              transition: 'all 0.2s',
+              marginTop: 24,
+              marginBottom: 8,
+              cursor: 'pointer',
+              width: '100%',
+              textAlign: 'center',
+              display: 'block',
+            }}
+            onMouseOver={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = '#fff';
+              (e.currentTarget as HTMLButtonElement).style.color = '#a6192e';
+            }}
+            onMouseOut={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = '#a6192e';
+              (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+            }}
             disabled={loading}
           >
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <div className="spinner mr-2" style={{ width: '20px', height: '20px' }}></div>
-                Signing In...
-              </div>
-            ) : (
-              <div className="flex items-center justify-center">
-                <Lock size={16} className="mr-2" />
-                Sign In
-              </div>
-            )}
+            {loading ? 'Signing In...' : (adminMode ? 'Sign In as Admin' : 'Sign In')}
           </button>
         </form>
 
