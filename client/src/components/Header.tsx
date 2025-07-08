@@ -92,6 +92,22 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
             Logout
           </button>
         </div>
+        <button
+          className="hamburger"
+          style={{
+            display: 'none',
+            background: 'none',
+            border: 'none',
+            fontSize: 32,
+            marginLeft: 16,
+            cursor: 'pointer',
+            zIndex: 1100
+          }}
+          onClick={() => setMobileMenuOpen((v) => !v)}
+          aria-label="Open menu"
+        >
+          ☰
+        </button>
       </div>
       {mobileMenuOpen && (
         <div
