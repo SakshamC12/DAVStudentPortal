@@ -299,69 +299,71 @@ const Marks: React.FC<MarksProps> = ({ student, adminView }) => {
                     </select>
                   </div>
                   <div style={{ overflowX: 'auto', background: '#fff', borderRadius: 16, padding: '1rem', marginTop: '1rem' }}>
-                    <table className="marks-table" style={{ minWidth: 700, width: '100%' }}>
-                      <thead>
-                        <tr>
-                          <th style={{ minWidth: 40, textAlign: 'left', paddingRight: 16 }}>S.No.</th>
-                          <th style={{ minWidth: 120, textAlign: 'left', paddingRight: 16 }}>Course Code</th>
-                          <th className="subject-name" style={{ minWidth: 260, textAlign: 'left', paddingRight: 24 }}>Subject Name</th>
-                          <th style={{ minWidth: 80, textAlign: 'center' }}>Credits</th>
-                          <th style={{ minWidth: 100, textAlign: 'center' }}>Max Mark</th>
-                          <th style={{ minWidth: 100, textAlign: 'center' }}>Pass Mark</th>
-                          <th style={{ minWidth: 120, textAlign: 'center' }}>Marks Obtained</th>
-                          <th style={{ minWidth: 120, textAlign: 'center' }}>Date Attended</th>
-                          <th style={{ padding: '0 16px', textAlign: 'center' }}>Semester</th>
-                          <th style={{ textAlign: 'center', padding: '0 16px' }}>Grade</th>
-                          <th style={{ textAlign: 'center', padding: '0 16px' }}>Result</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredSubjects
-                          .filter(subject => {
-                            // Only show subjects with 100 total term exam weightage
-                            const subjectMarks = termExamMarks.filter(m => m.subject_id === subject.id);
-                            const totalWeightage = subjectMarks.reduce((sum, mark) => {
-                              const exam = termExams.find(e => e.id === mark.exam_id);
-                              return sum + (exam ? exam.weight : 0);
-                            }, 0);
-                            return totalWeightage === 100;
-                          })
-                          .map((subject, idx) => {
-                            // Calculate normalized total and grade
-                            const subjectMarks = termExamMarks.filter(m => m.subject_id === subject.id);
-                            const normalizedTotal = subjectMarks.reduce((sum, mark) => {
-                              const exam = termExams.find(e => e.id === mark.exam_id);
-                              return sum + (exam ? (mark.marks_obtained / exam.max_mark) * exam.weight : 0);
-                            }, 0);
-                            let grade = '-';
-                            if (normalizedTotal >= 85) grade = 'A';
-                            else if (normalizedTotal >= 70) grade = 'B';
-                            else if (normalizedTotal >= 50) grade = 'C';
-                            else grade = 'F';
-                            // Find the first mark for date attended, pass mark, max mark, credits
-                            const firstMark = termExamMarks.find(m => m.subject_id === subject.id);
-                            return (
-                              <tr key={subject.id}>
-                                <td style={{ textAlign: 'left', minWidth: 40, paddingRight: 16 }}>{idx + 1}</td>
-                                <td style={{ textAlign: 'left', minWidth: 120, paddingRight: 16 }}>{subject.subject_code}</td>
-                                <td className="subject-name" style={{ textAlign: 'left', minWidth: 260, paddingRight: 24 }}>{subject.subject_name}</td>
-                                <td style={{ textAlign: 'center', minWidth: 80 }}>{subject.credits}</td>
-                                <td style={{ textAlign: 'center', minWidth: 100 }}>{firstMark ? firstMark.max_mark : '-'}</td>
-                                <td style={{ textAlign: 'center', minWidth: 100 }}>{firstMark ? firstMark.pass_mark : '-'}</td>
-                                <td style={{ textAlign: 'center', minWidth: 120 }}>{normalizedTotal.toFixed(2)}</td>
-                                <td style={{ textAlign: 'center', minWidth: 120 }}>{firstMark && firstMark.exam_date ? new Date(firstMark.exam_date).toLocaleDateString() : '-'}</td>
-                                <td style={{ textAlign: 'center', padding: '0 16px' }}>{firstMark ? firstMark.semester : '-'}</td>
-                                <td style={{ textAlign: 'center', padding: '0 16px' }}>
-                                  <span className={`badge ${grade === 'A' ? 'badge-success' : grade === 'B' ? 'badge-warning' : grade === 'C' ? 'badge-warning' : grade === 'F' ? 'badge-danger' : ''}`}>{grade}</span>
-                                </td>
-                                <td style={{ textAlign: 'center', padding: '0 16px' }}>
-                                  <span className={`badge ${grade !== 'F' ? 'badge-success' : 'badge-danger'}`}>{grade !== 'F' ? 'PASS' : 'FAIL'}</span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </tbody>
-                    </table>
+                    <div className="marks-table-container" style={{ overflowX: 'auto' }}>
+                      <table className="marks-table" style={{ minWidth: 700, width: '100%' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ minWidth: 40, textAlign: 'left', paddingRight: 16 }}>S.No.</th>
+                            <th style={{ minWidth: 120, textAlign: 'left', paddingRight: 16 }}>Course Code</th>
+                            <th className="subject-name" style={{ minWidth: 260, textAlign: 'left', paddingRight: 24 }}>Subject Name</th>
+                            <th style={{ minWidth: 80, textAlign: 'center' }}>Credits</th>
+                            <th style={{ minWidth: 100, textAlign: 'center' }}>Max Mark</th>
+                            <th style={{ minWidth: 100, textAlign: 'center' }}>Pass Mark</th>
+                            <th style={{ minWidth: 120, textAlign: 'center' }}>Marks Obtained</th>
+                            <th style={{ minWidth: 120, textAlign: 'center' }}>Date Attended</th>
+                            <th style={{ padding: '0 16px', textAlign: 'center' }}>Semester</th>
+                            <th style={{ textAlign: 'center', padding: '0 16px' }}>Grade</th>
+                            <th style={{ textAlign: 'center', padding: '0 16px' }}>Result</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredSubjects
+                            .filter(subject => {
+                              // Only show subjects with 100 total term exam weightage
+                              const subjectMarks = termExamMarks.filter(m => m.subject_id === subject.id);
+                              const totalWeightage = subjectMarks.reduce((sum, mark) => {
+                                const exam = termExams.find(e => e.id === mark.exam_id);
+                                return sum + (exam ? exam.weight : 0);
+                              }, 0);
+                              return totalWeightage === 100;
+                            })
+                            .map((subject, idx) => {
+                              // Calculate normalized total and grade
+                              const subjectMarks = termExamMarks.filter(m => m.subject_id === subject.id);
+                              const normalizedTotal = subjectMarks.reduce((sum, mark) => {
+                                const exam = termExams.find(e => e.id === mark.exam_id);
+                                return sum + (exam ? (mark.marks_obtained / exam.max_mark) * exam.weight : 0);
+                              }, 0);
+                              let grade = '-';
+                              if (normalizedTotal >= 85) grade = 'A';
+                              else if (normalizedTotal >= 70) grade = 'B';
+                              else if (normalizedTotal >= 50) grade = 'C';
+                              else grade = 'F';
+                              // Find the first mark for date attended, pass mark, max mark, credits
+                              const firstMark = termExamMarks.find(m => m.subject_id === subject.id);
+                              return (
+                                <tr key={subject.id}>
+                                  <td style={{ textAlign: 'left', minWidth: 40, paddingRight: 16 }}>{idx + 1}</td>
+                                  <td style={{ textAlign: 'left', minWidth: 120, paddingRight: 16 }}>{subject.subject_code}</td>
+                                  <td className="subject-name" style={{ textAlign: 'left', minWidth: 260, paddingRight: 24 }}>{subject.subject_name}</td>
+                                  <td style={{ textAlign: 'center', minWidth: 80 }}>{subject.credits}</td>
+                                  <td style={{ textAlign: 'center', minWidth: 100 }}>{firstMark ? firstMark.max_mark : '-'}</td>
+                                  <td style={{ textAlign: 'center', minWidth: 100 }}>{firstMark ? firstMark.pass_mark : '-'}</td>
+                                  <td style={{ textAlign: 'center', minWidth: 120 }}>{normalizedTotal.toFixed(2)}</td>
+                                  <td style={{ textAlign: 'center', minWidth: 120 }}>{firstMark && firstMark.exam_date ? new Date(firstMark.exam_date).toLocaleDateString() : '-'}</td>
+                                  <td style={{ textAlign: 'center', padding: '0 16px' }}>{firstMark ? firstMark.semester : '-'}</td>
+                                  <td style={{ textAlign: 'center', padding: '0 16px' }}>
+                                    <span className={`badge ${grade === 'A' ? 'badge-success' : grade === 'B' ? 'badge-warning' : grade === 'C' ? 'badge-warning' : grade === 'F' ? 'badge-danger' : ''}`}>{grade}</span>
+                                  </td>
+                                  <td style={{ textAlign: 'center', padding: '0 16px' }}>
+                                    <span className={`badge ${grade !== 'F' ? 'badge-success' : 'badge-danger'}`}>{grade !== 'F' ? 'PASS' : 'FAIL'}</span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </>
               )}
@@ -428,35 +430,37 @@ const Marks: React.FC<MarksProps> = ({ student, adminView }) => {
                   {subject.subject_name} ({subject.subject_code})
                 </div>
                 <div style={{ padding: '1.5rem 2rem' }}>
-                  <table className="subject-marks-table">
-                    <thead>
-                      <tr>
-                        <th>Sl.No.</th>
-                        <th>Component</th>
-                        <th>Max. Mark</th>
-                        <th>Weightage %</th>
-                        <th>Scored Mark</th>
-                        <th>Weightage Mark</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {subjectMarks.map((mark, idx) => {
-                        const exam = termExams.find(e => e.id === mark.exam_id);
-                        if (!exam) return null;
-                        const weightageMark = ((mark.marks_obtained / exam.max_mark) * exam.weight).toFixed(2);
-                        return (
-                          <tr key={mark.id}>
-                            <td>{idx + 1}</td>
-                            <td>{exam.exam_name}</td>
-                            <td>{exam.max_mark}</td>
-                            <td>{exam.weight}</td>
-                            <td>{mark.marks_obtained}</td>
-                            <td>{weightageMark}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  <div className="marks-table-container" style={{ overflowX: 'auto' }}>
+                    <table className="subject-marks-table">
+                      <thead>
+                        <tr>
+                          <th>Sl.No.</th>
+                          <th>Component</th>
+                          <th>Max. Mark</th>
+                          <th>Weightage %</th>
+                          <th>Scored Mark</th>
+                          <th>Weightage Mark</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subjectMarks.map((mark, idx) => {
+                          const exam = termExams.find(e => e.id === mark.exam_id);
+                          if (!exam) return null;
+                          const weightageMark = ((mark.marks_obtained / exam.max_mark) * exam.weight).toFixed(2);
+                          return (
+                            <tr key={mark.id}>
+                              <td>{idx + 1}</td>
+                              <td>{exam.exam_name}</td>
+                              <td>{exam.max_mark}</td>
+                              <td>{exam.weight}</td>
+                              <td>{mark.marks_obtained}</td>
+                              <td>{weightageMark}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                   {totalWeightage === 100 && (
                     <div style={{ marginTop: 16, fontWeight: 600, textAlign: 'right' }}>
                       Normalized Total: {normalizedTotal.toFixed(2)} / 100<br />

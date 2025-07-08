@@ -115,6 +115,21 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
             margin-bottom: 0.5rem;
           }
         }
+        /* Responsive navbar styles */
+        @media (max-width: 600px) {
+          .navbar-content {
+            padding: 0 0.5rem !important;
+          }
+          .navbar-links {
+            overflow-x: auto !important;
+            flex-wrap: nowrap !important;
+            gap: 24px !important;
+            min-width: 0 !important;
+          }
+          .navbar-links > * {
+            flex: 0 0 auto !important;
+          }
+        }
       `}</style>
     </header>
   );
