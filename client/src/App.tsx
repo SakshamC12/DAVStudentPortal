@@ -23,6 +23,14 @@ interface Student {
   pfp_url?: string;
 }
 
+function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
+  const storedAdmin = localStorage.getItem('adminUser');
+  if (!storedAdmin) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
+
 function App() {
   const [student, setStudent] = useState<Student | null>(() => {
     const stored = localStorage.getItem('student');
@@ -233,15 +241,28 @@ function App() {
             <Route 
               path="/admin" 
               element={
-                adminUser ? (
+                <AdminProtectedRoute>
                   <AdminPage adminUser={adminUser} onLogout={handleAdminLogout} />
-                ) : (
-                  <Navigate to="/" replace />
-                )
+                </AdminProtectedRoute>
               } 
             />
             <Route path="/set-password" element={<SetPassword />} />
-            <Route path="/admin/profile/:studentId" element={<AdminProfileWrapper />} />
+            <Route 
+              path="/admin/profile/:studentId" 
+              element={
+                <AdminProtectedRoute>
+                  <AdminProfileWrapper />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route 
+              path="/admin/marks/:studentId" 
+              element={
+                <AdminProtectedRoute>
+                  <AdminMarksWrapper />
+                </AdminProtectedRoute>
+              }
+            />
           </Routes>
         </div>
       </div>

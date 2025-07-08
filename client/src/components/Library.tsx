@@ -212,7 +212,7 @@ const Library: React.FC<LibraryProps> = ({ student }) => {
   }
 
   return (
-    <div className="py-8">
+    <div className="py-8" style={{ overflowX: 'hidden' }}>
       {/* Library Records Card with header */}
       <div className="card" style={{ padding: 0, maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ background: '#a6192e', color: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: '1.5rem 2rem 1rem 2rem' }}>
@@ -237,7 +237,7 @@ const Library: React.FC<LibraryProps> = ({ student }) => {
               <p className="text-gray-600">You haven't borrowed any books from the library yet.</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', background: '#fff', borderRadius: 16, padding: '1rem', marginTop: '1rem' }}>
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: '#fff', borderRadius: 16, padding: '1rem', marginTop: '1rem' }}>
               <table className="marks-table" style={{ minWidth: 800, width: '100%' }}>
                 <thead>
                   <tr>
@@ -329,13 +329,13 @@ const Library: React.FC<LibraryProps> = ({ student }) => {
             style={{ width: '100%', padding: '0.5rem 1rem', borderRadius: 8, border: '1px solid #ccc', fontSize: '1rem' }}
             placeholder="Search by title or author..."
             value={searchAvailable}
-            onChange={e => setSearchAvailable(e.target.value)}
+            onChange={e => setSearchAvailable((e.target as HTMLInputElement).value)}
           />
         </div>
         {filteredAvailableBooks.length === 0 ? (
           <div style={{ color: '#888' }}>No books available for request.</div>
         ) : (
-          <div style={{ maxHeight: 340, overflowY: 'auto', borderRadius: 12, boxShadow: '0 2px 8px 0 #f3eaea', background: '#fff', paddingTop: 16 }}>
+          <div style={{ maxHeight: 340, overflowY: 'auto', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: 12, boxShadow: '0 2px 8px 0 #f3eaea', background: '#fff', paddingTop: 16 }}>
             <table className="marks-table" style={{ width: '100%' }}>
               <thead>
                 <tr>
@@ -366,8 +366,8 @@ const Library: React.FC<LibraryProps> = ({ student }) => {
                           transition: 'background 0.2s',
                           cursor: 'pointer',
                         }}
-                        onMouseOver={e => ((e.currentTarget as HTMLButtonElement).style.background = '#7d1422')}
-                        onMouseOut={e => ((e.currentTarget as HTMLButtonElement).style.background = '#a6192e')}
+                        onMouseOver={e => { (e.currentTarget as HTMLButtonElement).style.background = '#7d1422'; }}
+                        onMouseOut={e => { (e.currentTarget as HTMLButtonElement).style.background = '#a6192e'; }}
                         onClick={() => openRequestModal(book)}
                       >
                         Request
@@ -428,7 +428,7 @@ const Library: React.FC<LibraryProps> = ({ student }) => {
       {/* Student's Book Requests */}
       <div style={{ marginTop: '2.5rem' }}>
         <h2 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 10 }}>Your Book Requests</h2>
-        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px 0 #f3eaea', padding: '1.5rem 1.5rem 1rem 1.5rem', minWidth: 600, maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px 0 #f3eaea', padding: '1.5rem 1.5rem 1rem 1.5rem', minWidth: 600, maxWidth: 1200, margin: '0 auto', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {bookRequests.length === 0 ? (
             <div style={{ color: '#888' }}>No book requests yet.</div>
           ) : (
