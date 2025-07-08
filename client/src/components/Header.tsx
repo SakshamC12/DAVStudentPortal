@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Home, BookOpen, User, Menu, X, Library } from 'lucide-react';
 
 interface Student {
@@ -19,7 +19,9 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: Home },
@@ -27,6 +29,11 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
     { path: '/library', label: 'Library', icon: Library },
     { path: '/profile', label: 'Profile', icon: User },
   ];
+
+  const handleLogout = () => {
+    onLogout();
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className="navbar">
@@ -86,6 +93,63 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
           </button>
         </div>
       </div>
+      {mobileMenuOpen && (
+        <div
+          className="mobile-menu"
+          style={{
+            position: 'absolute',
+            top: 64,
+            left: 0,
+            right: 0,
+            background: '#fff',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '1rem 0'
+          }}
+        >
+          {navItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate(item.path);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#a6192e',
+                fontWeight: 700,
+                fontSize: '1.2rem',
+                margin: '0.5rem 0'
+              }}
+            >
+              {item.icon && <item.icon style={{ marginRight: 8 }} />}
+              {item.label}
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              handleLogout();
+            }}
+            style={{
+              background: '#a6192e',
+              color: '#fff',
+              fontWeight: 700,
+              borderRadius: 8,
+              border: '2px solid #a6192e',
+              padding: '0.75rem 2rem',
+              marginTop: 16,
+              fontSize: '1.1rem'
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      )}
       {/* Responsive: Hamburger menu for mobile */}
       <style>{`
         @media (max-width: 700px) {
@@ -128,6 +192,17 @@ const Header: React.FC<HeaderProps> = ({ student, onLogout }) => {
           }
           .navbar-links > * {
             flex: 0 0 auto !important;
+          }
+          .navbar-links, .navbar-content .btn-logout {
+            display: none !important;
+          }
+          .hamburger {
+            display: block !important;
+          }
+        }
+        @media (min-width: 601px) {
+          .mobile-menu {
+            display: none !important;
           }
         }
       `}</style>
