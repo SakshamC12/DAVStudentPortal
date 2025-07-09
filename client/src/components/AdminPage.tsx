@@ -149,79 +149,64 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
   return (
     <div className="py-8">
       <div className="card" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem', position: 'relative' }}>
-        <div className="admin-logout-wrapper">
+        <div className="admin-header-row">
+          <h1 className="text-2xl font-bold mb-4" style={{ margin: 0 }}>Admin Dashboard</h1>
           <button
             className="btn admin-logout-btn"
             onClick={onLogout}
-            onMouseOver={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#fff';
-              (e.currentTarget as HTMLButtonElement).style.color = '#a6192e';
-            }}
-            onMouseOut={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#a6192e';
-              (e.currentTarget as HTMLButtonElement).style.color = '#fff';
-            }}
-            style={{
-              background: '#a6192e',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: '1.1rem',
-              borderRadius: 8,
-              border: '2px solid #a6192e',
-              padding: '0.75rem 2.5rem',
-              transition: 'all 0.2s',
-              cursor: 'pointer',
-              zIndex: 20
-            }}
+            aria-label="Logout"
+            style={{ marginLeft: 8, background: 'transparent', border: 'none', color: '#a6192e', fontSize: 28, padding: 0, cursor: 'pointer' }}
           >
-            Logout
+            <LogOut />
           </button>
         </div>
-        <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '2px solid #eee' }}>
-          <button
-            onClick={() => setActiveTab('students')}
-            style={{
-              padding: '0.75rem 1.5rem',
-              border: 'none',
-              background: activeTab === 'students' ? '#a6192e' : 'transparent',
-              color: activeTab === 'students' ? '#fff' : '#333',
-              fontWeight: 600,
-              cursor: 'pointer',
-              borderBottom: activeTab === 'students' ? '2px solid #a6192e' : '2px solid transparent',
-            }}
-          >
-            Student Management
-          </button>
-          <button
-            onClick={() => setActiveTab('library')}
-            style={{
-              padding: '0.75rem 1.5rem',
-              border: 'none',
-              background: activeTab === 'library' ? '#a6192e' : 'transparent',
-              color: activeTab === 'library' ? '#fff' : '#333',
-              fontWeight: 600,
-              cursor: 'pointer',
-              borderBottom: activeTab === 'library' ? '2px solid #a6192e' : '2px solid transparent',
-            }}
-          >
-            Library Management
-          </button>
-          <button
-            onClick={() => setActiveTab('termexams')}
-            style={{
-              padding: '0.75rem 1.5rem',
-              border: 'none',
-              background: activeTab === 'termexams' ? '#a6192e' : 'transparent',
-              color: activeTab === 'termexams' ? '#fff' : '#333',
-              fontWeight: 600,
-              cursor: 'pointer',
-              borderBottom: activeTab === 'termexams' ? '2px solid #a6192e' : '2px solid transparent',
-            }}
-          >
-            Term Exam Management
-          </button>
+        <div className="admin-tabs-scrollable">
+          {/* Main admin dashboard tabs */}
+          {/* Replace static tab row with a horizontally scrollable flex row on mobile */}
+          <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '2px solid #eee' }}>
+            <button
+              onClick={() => setActiveTab('students')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                border: 'none',
+                background: activeTab === 'students' ? '#a6192e' : 'transparent',
+                color: activeTab === 'students' ? '#fff' : '#333',
+                fontWeight: 600,
+                cursor: 'pointer',
+                borderBottom: activeTab === 'students' ? '2px solid #a6192e' : '2px solid transparent',
+              }}
+            >
+              Student Management
+            </button>
+            <button
+              onClick={() => setActiveTab('library')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                border: 'none',
+                background: activeTab === 'library' ? '#a6192e' : 'transparent',
+                color: activeTab === 'library' ? '#fff' : '#333',
+                fontWeight: 600,
+                cursor: 'pointer',
+                borderBottom: activeTab === 'library' ? '2px solid #a6192e' : '2px solid transparent',
+              }}
+            >
+              Library Management
+            </button>
+            <button
+              onClick={() => setActiveTab('termexams')}
+              style={{
+                padding: '0.75rem 1.5rem',
+                border: 'none',
+                background: activeTab === 'termexams' ? '#a6192e' : 'transparent',
+                color: activeTab === 'termexams' ? '#fff' : '#333',
+                fontWeight: 600,
+                cursor: 'pointer',
+                borderBottom: activeTab === 'termexams' ? '2px solid #a6192e' : '2px solid transparent',
+              }}
+            >
+              Term Exam Management
+            </button>
+          </div>
         </div>
         
         
@@ -513,39 +498,85 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
       </div>
       <style>{`
         @media (max-width: 700px) {
-          .admin-logout-wrapper {
-            position: absolute;
-            top: -56px;
-            left: 0;
-            width: 100%;
+          .admin-dashboard, .card {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+            margin: 0 auto !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+          .admin-header-row {
             display: flex;
-            justify-content: center;
-            z-index: 20;
+            align-items: center;
+            justify-content: space-between;
+            width: 100vw;
+            margin-bottom: 1rem;
+            padding: 0 1rem;
+            box-sizing: border-box;
           }
           .admin-logout-btn {
-            margin: 0 auto;
-            display: block;
+            font-size: 28px !important;
+            padding: 0.25rem 0.5rem !important;
+            background: transparent !important;
+            border: none !important;
+            color: #a6192e !important;
+            box-shadow: none !important;
+            border-radius: 50% !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
           }
-          .card {
-            margin-top: 2.5rem !important;
+          .admin-logout-btn:active {
+            background: #f3eaea !important;
+          }
+          .admin-tabs-scrollable {
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 100vw;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            padding: 0 1rem;
+          }
+          .admin-tabs-scrollable .tab-btn {
+            display: inline-block;
+            min-width: 120px;
+            width: auto;
+            margin-right: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+          }
+          .admin-dashboard .search-bar, .card .search-bar, .form-input[type='text'] {
+            width: 100vw !important;
+            min-width: 0 !important;
+            margin-bottom: 1rem !important;
+            box-sizing: border-box;
+            padding: 0 1rem;
+          }
+          .marks-table, .admin-dashboard table {
+            min-width: 600px !important;
+            width: 100vw !important;
+          }
+          .table-responsive, .admin-dashboard .table-responsive {
+            overflow-x: auto !important;
+            max-width: 100vw !important;
+          }
+          .tab-btn, .admin-dashboard .tab-btn {
+            width: auto;
+            min-width: 120px;
+            box-sizing: border-box;
+            font-size: 1rem;
           }
         }
         @media (min-width: 701px) {
-          .admin-logout-wrapper {
-            position: absolute;
-            top: 32px;
-            right: 32px;
-            left: auto;
-            width: auto;
-            display: flex;
-            justify-content: flex-end;
-            z-index: 2;
+          .admin-header-row {
+            margin-bottom: 2rem;
+            padding: 0;
+            align-items: flex-end;
           }
-          .admin-logout-btn {
-            margin: 0;
-          }
-          .card {
-            margin-top: 0 !important;
+          .admin-header-row h1 {
+            margin-bottom: 0;
+            margin-top: 0.5rem;
           }
         }
       `}</style>

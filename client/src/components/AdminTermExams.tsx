@@ -1387,31 +1387,30 @@ const AdminTermExams: React.FC = () => {
       </div>
       <style>{`
         @media (max-width: 700px) {
-          .admin-termexams, .card {
-            width: 100% !important;
-            max-width: 100vw !important;
-            min-width: 0 !important;
+          .termexams-tabs-scrollable {
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 100vw;
+            margin-bottom: 1rem;
             box-sizing: border-box;
+            padding: 0 1rem;
           }
-          .admin-termexams .search-bar, .card .search-bar, .form-input[type='text'] {
-            width: 100% !important;
-            min-width: 0 !important;
-            margin-bottom: 1rem !important;
-            box-sizing: border-box;
-          }
-          .marks-table, .admin-termexams table {
-            min-width: 600px !important;
-            width: 100% !important;
-          }
-          .table-responsive, .admin-termexams .table-responsive {
-            overflow-x: auto !important;
-            max-width: 100vw !important;
-          }
-          .tab-btn, .admin-termexams .tab-btn {
-            width: 100%;
-            min-width: 0;
-            box-sizing: border-box;
+          .termexams-tabs-scrollable .tab-btn {
+            display: inline-block;
+            min-width: 120px;
+            width: auto;
+            margin-right: 0.5rem;
             font-size: 1rem;
+            box-sizing: border-box;
+          }
+          .admin-termexams, .card {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+            margin: 0 auto !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
           }
         }
       `}</style>
