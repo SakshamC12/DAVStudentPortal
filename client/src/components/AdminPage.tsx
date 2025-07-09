@@ -44,6 +44,9 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  // 1. Add a utility to detect mobile view:
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+
   useEffect(() => {
     const fetchStudents = async () => {
       setLoading(true);
@@ -372,9 +375,20 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
             )}
             {showAddForm && (
               <div ref={addFormRef} className="card mb-6" style={{ maxWidth: 900, margin: '2rem auto', background: '#f7e6e9', position: 'relative' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddForm(false)}>
-                  Cancel
-                </button>
+                {isMobile ? (
+                  <button
+                    className="btn"
+                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
+                    aria-label="Close"
+                    onClick={() => setShowAddForm(false)}
+                  >
+                    ×
+                  </button>
+                ) : (
+                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddForm(false)}>
+                    Cancel
+                  </button>
+                )}
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: 24, alignItems: 'center' }}>
                   <button
                     className="btn"
@@ -685,6 +699,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
             box-sizing: border-box;
             font-size: 1rem;
           }
+          .mobile-x-btn { display: none !important; }
+          .desktop-cancel-btn { display: block !important; }
         }
         @media (min-width: 701px) {
           .admin-header-row {

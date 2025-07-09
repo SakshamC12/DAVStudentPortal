@@ -110,6 +110,9 @@ const AdminLibrary: React.FC = () => {
   const [deleteBookLoading, setDeleteBookLoading] = useState(false);
   const [showDeleteBookModal, setShowDeleteBookModal] = useState(false);
 
+  // 1. Add a utility to detect mobile view:
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
@@ -1108,9 +1111,20 @@ const AdminLibrary: React.FC = () => {
             )}
             {showAddBook && (
               <div ref={addBookFormRef} className="card mb-6" style={{ background: '#f7e6e9', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddBook(false)}>
-                  Cancel
-                </button>
+                {isMobile ? (
+                  <button
+                    className="btn"
+                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
+                    aria-label="Close"
+                    onClick={() => setShowAddBook(false)}
+                  >
+                    ×
+                  </button>
+                ) : (
+                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddBook(false)}>
+                    Cancel
+                  </button>
+                )}
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: 24 }}>
                   <button
                     className="btn"
@@ -1395,9 +1409,20 @@ const AdminLibrary: React.FC = () => {
             )}
             {showEditBorrowing && editingBorrowing && (
               <div className="card mb-6" style={{ background: '#e0f2fe', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => { setShowEditBorrowing(false); setEditingBorrowing(null); }}>
-                  Cancel
-                </button>
+                {isMobile ? (
+                  <button
+                    className="btn"
+                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
+                    aria-label="Close"
+                    onClick={() => { setShowEditBorrowing(false); setEditingBorrowing(null); }}
+                  >
+                    ×
+                  </button>
+                ) : (
+                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => { setShowEditBorrowing(false); setEditingBorrowing(null); }}>
+                    Cancel
+                  </button>
+                )}
                 <h2 className="text-xl font-bold mb-4">Edit Borrowing</h2>
                 <form onSubmit={handleUpdateBorrowing}>
                   <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -1426,9 +1451,20 @@ const AdminLibrary: React.FC = () => {
             )}
             {showAddBorrowing && (
               <div ref={addBorrowingFormRef} className="card mb-6" style={{ background: '#f7e6e9', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddBorrowing(false)}>
-                  Cancel
-                </button>
+                {isMobile ? (
+                  <button
+                    className="btn"
+                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
+                    aria-label="Close"
+                    onClick={() => setShowAddBorrowing(false)}
+                  >
+                    ×
+                  </button>
+                ) : (
+                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddBorrowing(false)}>
+                    Cancel
+                  </button>
+                )}
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: 24 }}>
                   <button
                     className="btn"
@@ -1727,6 +1763,12 @@ const AdminLibrary: React.FC = () => {
             padding-left: 0 !important;
             padding-right: 0 !important;
           }
+          .mobile-x-btn { display: block !important; }
+          .desktop-cancel-btn { display: none !important; }
+        }
+        @media (min-width: 701px) {
+          .mobile-x-btn { display: none !important; }
+          .desktop-cancel-btn { display: block !important; }
         }
       `}</style>
     </div>
