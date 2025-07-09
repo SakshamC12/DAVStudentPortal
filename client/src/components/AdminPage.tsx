@@ -148,9 +148,18 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
   return (
     <div className="py-8">
       <div className="card" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem', position: 'relative' }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', position: 'absolute', top: 32, right: 32, zIndex: 2 }}>
+        <div className="admin-logout-wrapper">
           <button
-            className="btn"
+            className="btn admin-logout-btn"
+            onClick={onLogout}
+            onMouseOver={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = '#fff';
+              (e.currentTarget as HTMLButtonElement).style.color = '#a6192e';
+            }}
+            onMouseOut={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = '#a6192e';
+              (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+            }}
             style={{
               background: '#a6192e',
               color: '#fff',
@@ -161,16 +170,8 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
               padding: '0.75rem 2.5rem',
               transition: 'all 0.2s',
               cursor: 'pointer',
+              zIndex: 20
             }}
-            onMouseOver={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#fff';
-              (e.currentTarget as HTMLButtonElement).style.color = '#a6192e';
-            }}
-            onMouseOut={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#a6192e';
-              (e.currentTarget as HTMLButtonElement).style.color = '#fff';
-            }}
-            onClick={onLogout}
           >
             Logout
           </button>
@@ -509,6 +510,44 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
           <AdminTermExams />
         )}
       </div>
+      <style>{`
+        @media (max-width: 700px) {
+          .admin-logout-wrapper {
+            position: absolute;
+            top: -56px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 20;
+          }
+          .admin-logout-btn {
+            margin: 0 auto;
+            display: block;
+          }
+          .card {
+            margin-top: 2.5rem !important;
+          }
+        }
+        @media (min-width: 701px) {
+          .admin-logout-wrapper {
+            position: absolute;
+            top: 32px;
+            right: 32px;
+            left: auto;
+            width: auto;
+            display: flex;
+            justify-content: flex-end;
+            z-index: 2;
+          }
+          .admin-logout-btn {
+            margin: 0;
+          }
+          .card {
+            margin-top: 0 !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

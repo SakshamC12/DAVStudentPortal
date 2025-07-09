@@ -347,8 +347,8 @@ const Marks: React.FC<MarksProps> = ({ student, adminView }) => {
                                   <td style={{ textAlign: 'left', minWidth: 120, paddingRight: 16 }}>{subject.subject_code}</td>
                                   <td className="subject-name" style={{ textAlign: 'left', minWidth: 260, paddingRight: 24 }}>{subject.subject_name}</td>
                                   <td style={{ textAlign: 'center', minWidth: 80 }}>{subject.credits}</td>
-                                  <td style={{ textAlign: 'center', minWidth: 100 }}>{firstMark ? firstMark.max_mark : '-'}</td>
-                                  <td style={{ textAlign: 'center', minWidth: 100 }}>{firstMark ? firstMark.pass_mark : '-'}</td>
+                                  <td style={{ textAlign: 'center', minWidth: 100 }}>{subject.max_mark}</td>
+                                  <td style={{ textAlign: 'center', minWidth: 100 }}>{subject.pass_mark}</td>
                                   <td style={{ textAlign: 'center', minWidth: 120 }}>{normalizedTotal.toFixed(2)}</td>
                                   <td style={{ textAlign: 'center', minWidth: 120 }}>{firstMark && firstMark.exam_date ? new Date(firstMark.exam_date).toLocaleDateString() : '-'}</td>
                                   <td style={{ textAlign: 'center', padding: '0 16px' }}>{firstMark ? firstMark.semester : '-'}</td>

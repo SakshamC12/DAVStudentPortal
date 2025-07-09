@@ -127,6 +127,9 @@ const AdminTermExams: React.FC = () => {
   // Add at the top of the component, after useState imports:
   const [markSearch, setMarkSearch] = useState('');
 
+  // Add at the top with other useState hooks:
+  const [manualExamRowErrors, setManualExamRowErrors] = useState<string[]>([]);
+
   // Fetch exams, students, subjects, marks
   useEffect(() => {
     fetchExams();
@@ -296,16 +299,18 @@ const AdminTermExams: React.FC = () => {
   const handleAddManualMarkRow = () => setManualMarks([...manualMarks, { student_id: '', subject_id: '', exam_id: '', marks_obtained: '', exam_date: '', semester: '', year: '' }]);
   const handleRemoveManualMarkRow = (idx: number) => setManualMarks(marks => marks.filter((_, i) => i !== idx));
   const handleManualMarkSubmit = async () => {
-    // Validate all rows
-    for (const [idx, row] of manualMarks.entries()) {
-      if (!row.student_id || !row.subject_id || !row.exam_id || !row.marks_obtained || !row.semester || !row.year) {
-        alert(`Please fill all required fields in row ${idx + 1}`);
-        return;
-      }
-      // Optionally: validate marks_obtained is a number, etc.
+    // Only keep valid rows
+    const validRows = manualMarks.filter(row =>
+      row.student_id && row.subject_id && row.exam_id && row.marks_obtained && row.exam_date && row.semester && row.year
+    );
+    if (validRows.length === 0) {
+      alert('No valid marks to insert.');
+      setManualMarks([{ student_id: '', subject_id: '', exam_id: '', marks_obtained: '', exam_date: '', semester: '', year: '' }]);
+      setShowAddMark(false);
+      fetchMarks();
+      return;
     }
-    // Prepare data for insertion
-    const insertRows = manualMarks.map(row => ({
+    const insertRows = validRows.map(row => ({
       student_id: row.student_id,
       subject_id: Number(row.subject_id),
       exam_id: row.exam_id,
@@ -386,7 +391,7 @@ const AdminTermExams: React.FC = () => {
     // Validate all rows before submission
     const errors = bulkMarks.map(validateBulkMarkRow);
     setBulkMarkRowErrors(errors);
-    const validRows = bulkMarks.filter((row, idx) => !errors[idx]);
+    const validRows = bulkMarks.filter((row, idx) => !errors[idx] && row.student_id && row.subject_id && row.exam_id && row.marks_obtained && row.exam_date && row.semester && row.year);
     if (validRows.length === 0) return;
     // Prepare data for insertion
     const insertRows = validRows.map(row => ({
@@ -405,25 +410,51 @@ const AdminTermExams: React.FC = () => {
       setShowAddMark(false);
       fetchMarks();
     } else {
-      // Optionally, show a global error or mark all rows as failed
       alert('Error inserting marks: ' + error.message);
     }
   };
 
   const handleManualExamChange = (idx: number, key: string, value: string) => {
-    setManualExams(exams => exams.map((row, i) => i === idx ? { ...row, [key]: value } : row));
+    setManualExams(exams => {
+      const newExams = exams.map((row, i) => i === idx ? { ...row, [key]: value } : row);
+      // Validate for duplicate
+      const errors = newExams.map((row, i) => {
+        if (!row.exam_name || !row.max_mark || !row.weight) return '';
+        const duplicate = exams.some((e, j) =>
+          j !== i &&
+          e.exam_name.trim().toLowerCase() === row.exam_name.trim().toLowerCase() &&
+          Number(e.max_mark) === Number(row.max_mark) &&
+          Number(e.weight) === Number(row.weight)
+        );
+        if (duplicate || exams.some(e =>
+          e.exam_name.trim().toLowerCase() === row.exam_name.trim().toLowerCase() &&
+          Number(e.max_mark) === Number(row.max_mark) &&
+          Number(e.weight) === Number(row.weight)
+        )) {
+          return 'Duplicate exam (name, max mark, and weight) already exists.';
+        }
+        return '';
+      });
+      setManualExamRowErrors(errors);
+      return newExams;
+    });
   };
   const handleAddManualExamRow = () => setManualExams([...manualExams, { exam_name: '', max_mark: '', weight: '' }]);
   const handleRemoveManualExamRow = (idx: number) => setManualExams(exams => exams.filter((_, i) => i !== idx));
   const handleManualExamSubmit = async () => {
     // Validate all rows
-    for (const [idx, row] of manualExams.entries()) {
-      if (!row.exam_name || !row.max_mark || !row.weight) {
-        alert(`Please fill all required fields in row ${idx + 1}`);
-        return;
-      }
-      // Optionally: validate max_mark and weight are numbers
-    }
+    const errors = manualExams.map((row, idx) => {
+      if (!row.exam_name || !row.max_mark || !row.weight) return 'Please fill all required fields.';
+      const duplicate = exams.some(e =>
+        e.exam_name.trim().toLowerCase() === row.exam_name.trim().toLowerCase() &&
+        Number(e.max_mark) === Number(row.max_mark) &&
+        Number(e.weight) === Number(row.weight)
+      );
+      if (duplicate) return 'Duplicate exam (name, max mark, and weight) already exists.';
+      return '';
+    });
+    setManualExamRowErrors(errors);
+    if (errors.some(e => e)) return;
     // Prepare data for insertion
     const insertRows = manualExams.map(row => ({
       exam_name: row.exam_name,
@@ -432,10 +463,11 @@ const AdminTermExams: React.FC = () => {
     }));
     const { error } = await supabase.from('term_exams').insert(insertRows);
     if (error) {
-      alert('Error inserting exams: ' + error.message);
+      setManualExamRowErrors([error.message]);
       return;
     }
     setManualExams([{ exam_name: '', max_mark: '', weight: '' }]);
+    setManualExamRowErrors([]);
     setShowAddExam(false);
     fetchExams();
   };
@@ -501,7 +533,22 @@ const AdminTermExams: React.FC = () => {
       setBulkExamLoading(false);
       return;
     }
-    const { error } = await supabase.from('term_exams').insert(validRows.map(row => ({
+    // Filter out duplicates
+    const filteredRows = validRows.filter(row =>
+      !exams.some(e =>
+        e.exam_name.trim().toLowerCase() === row.exam_name.trim().toLowerCase() &&
+        Number(e.max_mark) === Number(row.max_mark) &&
+        Number(e.weight) === Number(row.weight)
+      )
+    );
+    if (filteredRows.length !== validRows.length) {
+      alert('Some duplicate exams were not added.');
+    }
+    if (filteredRows.length === 0) {
+      setBulkExamLoading(false);
+      return;
+    }
+    const { error } = await supabase.from('term_exams').insert(filteredRows.map(row => ({
       exam_name: row.exam_name,
       max_mark: Number(row.max_mark),
       weight: Number(row.weight),
@@ -832,12 +879,19 @@ const AdminTermExams: React.FC = () => {
                         </thead>
                         <tbody>
                           {manualExams.map((row, idx) => (
-                            <tr key={idx}>
-                              <td><input type="text" value={row.exam_name} onChange={e => handleManualExamChange(idx, 'exam_name', (e.target as HTMLInputElement).value)} className="form-input" /></td>
-                              <td><input type="number" value={row.max_mark} onChange={e => handleManualExamChange(idx, 'max_mark', (e.target as HTMLInputElement).value)} className="form-input" min={1} /></td>
-                              <td><input type="number" value={row.weight} onChange={e => handleManualExamChange(idx, 'weight', (e.target as HTMLInputElement).value)} className="form-input" min={0} /></td>
-                              <td><button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => handleRemoveManualExamRow(idx)} type="button" disabled={manualExams.length === 1}>Remove</button></td>
-                            </tr>
+                            <React.Fragment key={idx}>
+                              <tr>
+                                <td><input type="text" value={row.exam_name} onChange={e => handleManualExamChange(idx, 'exam_name', (e.target as HTMLInputElement).value)} className="form-input" /></td>
+                                <td><input type="number" value={row.max_mark} onChange={e => handleManualExamChange(idx, 'max_mark', (e.target as HTMLInputElement).value)} className="form-input" min={1} /></td>
+                                <td><input type="number" value={row.weight} onChange={e => handleManualExamChange(idx, 'weight', (e.target as HTMLInputElement).value)} className="form-input" min={0} /></td>
+                                <td><button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => handleRemoveManualExamRow(idx)} type="button" disabled={manualExams.length === 1}>Remove</button></td>
+                              </tr>
+                              {manualExamRowErrors[idx] && (
+                                <tr>
+                                  <td colSpan={4} style={{ color: 'red', fontSize: 13, background: '#fff0f0', textAlign: 'left', paddingLeft: 12 }}>{manualExamRowErrors[idx]}</td>
+                                </tr>
+                              )}
+                            </React.Fragment>
                           ))}
                         </tbody>
                       </table>

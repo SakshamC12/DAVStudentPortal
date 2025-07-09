@@ -1545,6 +1545,7 @@ const AdminLibrary: React.FC = () => {
                       <th style={{ textAlign: 'center' }}>Request Date</th>
                       <th style={{ textAlign: 'center' }}>Approval Date</th>
                       <th style={{ textAlign: 'center' }}>Return Date</th>
+                      <th style={{ textAlign: 'center' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1557,6 +1558,28 @@ const AdminLibrary: React.FC = () => {
                         <td style={{ textAlign: 'center' }}>{req.request_date ? new Date(req.request_date).toLocaleDateString() : '-'}</td>
                         <td style={{ textAlign: 'center' }}>{req.approval_date ? new Date(req.approval_date).toLocaleDateString() : '-'}</td>
                         <td style={{ textAlign: 'center' }}>{req.return_date ? new Date(req.return_date).toLocaleDateString() : '-'}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          {req.status === 'pending' && (
+                            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                              <button
+                                className="btn btn-sm"
+                                style={{ background: '#10b981', color: '#fff', fontWeight: 600, borderRadius: 6, padding: '0.4rem 1.2rem' }}
+                                onClick={() => handleApproveRequest(req)}
+                                disabled={requestActionLoading === req.id}
+                              >
+                                {requestActionLoading === req.id ? 'Approving...' : 'Approve'}
+                              </button>
+                              <button
+                                className="btn btn-sm"
+                                style={{ background: '#ef4444', color: '#fff', fontWeight: 600, borderRadius: 6, padding: '0.4rem 1.2rem' }}
+                                onClick={() => handleDenyRequest(req)}
+                                disabled={requestActionLoading === req.id}
+                              >
+                                {requestActionLoading === req.id ? 'Denying...' : 'Deny'}
+                              </button>
+                            </div>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
