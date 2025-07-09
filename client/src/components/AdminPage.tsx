@@ -149,16 +149,17 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
   return (
     <div className="py-8">
       <div className="card" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem', position: 'relative' }}>
+        <button
+          className="btn admin-logout-btn"
+          onClick={onLogout}
+          aria-label="Logout"
+          style={{ position: 'absolute', top: 16, right: 16, zIndex: 100, fontSize: 28, background: 'transparent', border: 'none', color: '#a6192e', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <LogOut />
+          <span className="logout-text" style={{ marginLeft: 8, fontSize: 18, fontWeight: 600 }}>Logout</span>
+        </button>
         <div className="admin-header-row">
           <h1 className="text-2xl font-bold mb-4" style={{ margin: 0 }}>Admin Dashboard</h1>
-          <button
-            className="btn admin-logout-btn"
-            onClick={onLogout}
-            aria-label="Logout"
-            style={{ marginLeft: 8, background: 'transparent', border: 'none', color: '#a6192e', fontSize: 28, padding: 0, cursor: 'pointer' }}
-          >
-            <LogOut />
-          </button>
         </div>
         <div className="admin-tabs-scrollable">
           {/* Main admin dashboard tabs */}
@@ -515,8 +516,13 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
             margin-bottom: 1rem;
             padding: 0 1rem;
             box-sizing: border-box;
+            position: relative;
           }
           .admin-logout-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            z-index: 100;
             font-size: 28px !important;
             padding: 0.25rem 0.5rem !important;
             background: transparent !important;
@@ -526,6 +532,9 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
             border-radius: 50% !important;
             min-width: 0 !important;
             min-height: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
           .admin-logout-btn:active {
             background: #f3eaea !important;
@@ -573,10 +582,56 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
             margin-bottom: 2rem;
             padding: 0;
             align-items: flex-end;
+            position: relative;
           }
           .admin-header-row h1 {
             margin-bottom: 0;
             margin-top: 0.5rem;
+            width: 100%;
+            text-align: left;
+            margin-right: 2.5rem;
+          }
+          .admin-logout-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            z-index: 100;
+            font-size: 28px !important;
+            background: transparent !important;
+            border: none !important;
+            color: #a6192e !important;
+            box-shadow: none !important;
+            border-radius: 50% !important;
+            min-width: 0 !important;
+            min-height: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+        .admin-logout-btn {
+          position: absolute !important;
+          top: 16px !important;
+          right: 16px !important;
+          z-index: 100 !important;
+          font-size: 28px !important;
+          background: transparent !important;
+          border: none !important;
+          color: #a6192e !important;
+          box-shadow: none !important;
+          border-radius: 50% !important;
+          min-width: 0 !important;
+          min-height: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+        .logout-text {
+          display: none;
+        }
+        @media (min-width: 701px) {
+          .logout-text {
+            display: inline;
           }
         }
       `}</style>
