@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import AdminLibrary from './AdminLibrary';
 import AdminTermExams from './AdminTermExams';
 import * as XLSX from 'xlsx';
+import { LogOut } from 'lucide-react';
 
 interface AdminPageProps {
   adminUser: any;

@@ -1589,6 +1589,36 @@ const AdminLibrary: React.FC = () => {
           </div>
         )}
       </div>
+      <style>{`
+        @media (max-width: 700px) {
+          .admin-library, .card {
+            width: 100% !important;
+            max-width: 100vw !important;
+            min-width: 0 !important;
+            box-sizing: border-box;
+          }
+          .admin-library .search-bar, .card .search-bar, .form-input[type='text'] {
+            width: 100% !important;
+            min-width: 0 !important;
+            margin-bottom: 1rem !important;
+            box-sizing: border-box;
+          }
+          .marks-table, .admin-library table {
+            min-width: 600px !important;
+            width: 100% !important;
+          }
+          .table-responsive, .admin-library .table-responsive {
+            overflow-x: auto !important;
+            max-width: 100vw !important;
+          }
+          .tab-btn, .admin-library .tab-btn {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            font-size: 1rem;
+          }
+        }
+      `}</style>
     </div>
   );
 };
