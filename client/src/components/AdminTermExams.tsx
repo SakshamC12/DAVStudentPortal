@@ -780,6 +780,10 @@ const AdminTermExams: React.FC = () => {
     setSelectedMarkIds([]);
   };
 
+  // In the add exam/mark card (manual and bulk entry), replace the Cancel button with an 'X' icon at the top right for mobile view:
+  // 1. Add a utility to detect mobile view:
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
+
   return (
     <div className="py-8">
       <div className="card" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem' }}>
@@ -931,9 +935,20 @@ const AdminTermExams: React.FC = () => {
             )}
             {showAddExam && !examEditMode && (
               <div ref={addExamFormRef} className="card mb-6" style={{ background: '#f7e6e9', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddExam(false)}>
-                  Cancel
-                </button>
+                {isMobile ? (
+                  <button
+                    className="btn"
+                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
+                    aria-label="Close"
+                    onClick={() => setShowAddExam(false)}
+                  >
+                    ×
+                  </button>
+                ) : (
+                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddExam(false)}>
+                    Cancel
+                  </button>
+                )}
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: 24 }}>
                   <button
                     className="btn"
@@ -1099,9 +1114,20 @@ const AdminTermExams: React.FC = () => {
             )}
             {showAddExam && examEditMode && (
               <div ref={addExamFormRef} className="card mb-6" style={{ background: '#f7e6e9', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => { setShowAddExam(false); setExamEditMode(false); setExamForm({ id: '', exam_name: '', max_mark: '100', weight: '0' }); }}>
-                  Cancel
-                </button>
+                {isMobile ? (
+                  <button
+                    className="btn"
+                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
+                    aria-label="Close"
+                    onClick={() => { setShowAddExam(false); setExamEditMode(false); setExamForm({ id: '', exam_name: '', max_mark: '100', weight: '0' }); }}
+                  >
+                    ×
+                  </button>
+                ) : (
+                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => { setShowAddExam(false); setExamEditMode(false); setExamForm({ id: '', exam_name: '', max_mark: '100', weight: '0' }); }}>
+                    Cancel
+                  </button>
+                )}
                 <h2 className="text-xl font-bold mb-4">Edit Exam</h2>
                 <form onSubmit={handleExamSubmit}>
                   <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -1223,9 +1249,20 @@ const AdminTermExams: React.FC = () => {
             )}
             {showAddMark && !markEditMode && (
               <div ref={addMarkFormRef} className="card mb-6" style={{ background: '#f7e6e9', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddMark(false)}>
-                  Cancel
-                </button>
+                {isMobile ? (
+                  <button
+                    className="btn"
+                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
+                    aria-label="Close"
+                    onClick={() => setShowAddMark(false)}
+                  >
+                    ×
+                  </button>
+                ) : (
+                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => setShowAddMark(false)}>
+                    Cancel
+                  </button>
+                )}
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: 24 }}>
                   <button
                     className="btn"
@@ -1481,9 +1518,20 @@ const AdminTermExams: React.FC = () => {
             )}
             {showAddMark && markEditMode && (
               <div ref={addMarkFormRef} className="card mb-6" style={{ background: '#f7e6e9', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => { setShowAddMark(false); setMarkEditMode(false); setMarkForm({ id: '', student_id: '', subject_id: '', exam_id: '', marks_obtained: '', exam_date: '', semester: '', year: '' }); }}>
-                  Cancel
-                </button>
+                {isMobile ? (
+                  <button
+                    className="btn"
+                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
+                    aria-label="Close"
+                    onClick={() => { setShowAddMark(false); setMarkEditMode(false); setMarkForm({ id: '', student_id: '', subject_id: '', exam_id: '', marks_obtained: '', exam_date: '', semester: '', year: '' }); }}
+                  >
+                    ×
+                  </button>
+                ) : (
+                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => { setShowAddMark(false); setMarkEditMode(false); setMarkForm({ id: '', student_id: '', subject_id: '', exam_id: '', marks_obtained: '', exam_date: '', semester: '', year: '' }); }}>
+                    Cancel
+                  </button>
+                )}
                 <h2 className="text-xl font-bold mb-4">Edit Mark</h2>
                 <form onSubmit={handleMarkSubmit}>
                   <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -1547,6 +1595,12 @@ const AdminTermExams: React.FC = () => {
             padding-left: 0 !important;
             padding-right: 0 !important;
           }
+          .mobile-x-btn { display: block !important; }
+          .desktop-cancel-btn { display: none !important; }
+        }
+        @media (min-width: 701px) {
+          .mobile-x-btn { display: none !important; }
+          .desktop-cancel-btn { display: block !important; }
         }
       `}</style>
       {showExamDeleteModal && (
