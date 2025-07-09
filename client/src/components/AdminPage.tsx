@@ -39,6 +39,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
   const addFormRef = useRef<HTMLDivElement | null>(null);
   const [showStudentTemplate, setShowStudentTemplate] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -146,6 +150,27 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
     }
   };
 
+  const handleDeleteSelected = () => {
+    if (!selectedStudents.length) return;
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSelected = async () => {
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase.from('students').delete().in('id', selectedStudents);
+      if (error) throw error;
+      setStudents(prev => prev.filter(s => !selectedStudents.includes(s.id)));
+      setSelectedStudents([]);
+      setDeleteMode(false);
+      setShowDeleteModal(false);
+    } catch (err) {
+      alert('Failed to delete selected students.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="py-8">
       <div className="card" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem', position: 'relative' }}>
@@ -213,6 +238,36 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
         
         {activeTab === 'students' && (
           <>
+            {/* Delete Multiple Button - always visible above search bar and table */}
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: 24 }}>
+              {!deleteMode ? (
+                <button
+                  className="btn"
+                  style={{ background: '#a6192e', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #f3eaea', marginRight: 12 }}
+                  onClick={() => setDeleteMode(true)}
+                >
+                  Delete Multiple
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="btn"
+                    style={{ background: '#ef4444', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #f3eaea', marginRight: 12 }}
+                    onClick={() => setDeleteMode(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn"
+                    style={{ background: selectedStudents.length ? '#a6192e' : '#ccc', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #f3eaea' }}
+                    disabled={!selectedStudents.length || deleteLoading}
+                    onClick={handleDeleteSelected}
+                  >
+                    {deleteLoading ? 'Deleting...' : `Delete Selected (${selectedStudents.length})`}
+                  </button>
+                </>
+              )}
+            </div>
             {/* Search Bar */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
               <input
@@ -233,6 +288,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
                 <table className="marks-table" style={{ minWidth: 900, width: '100%' }}>
                   <thead>
                     <tr>
+                      {deleteMode && <th></th>}
                       <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Student ID</th>
                       <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Name</th>
                       <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Email</th>
@@ -251,45 +307,60 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
                         student.name.toLowerCase().includes(searchTerm.toLowerCase())
                       )
                       .map((student) => (
-                      <tr key={student.id} style={{ borderBottom: '1px solid #eee' }}>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.student_id}</td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.name}</td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.email}</td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.department}</td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.year}</td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.semester}</td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.date_of_birth}</td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
-                          {student.pfp_url ? (
-                            <img src={student.pfp_url} alt="pfp" style={{ width: 40, height: 40, borderRadius: '50%' }} />
-                          ) : (
-                            'N/A'
-                          )}
-                        </td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <Link to={`/admin/profile/${student.student_id}`} className="btn btn-sm" style={{ background: '#a6192e', color: '#fff' }}>View Profile</Link>
-                            <button
-                              className="btn btn-sm"
-                              style={{ background: '#ef4444', color: '#fff' }}
-                              onClick={async () => {
-                                if (window.confirm('Are you sure you want to delete this student? This will remove all related data.')) {
-                                  const { error } = await supabase.from('students').delete().eq('id', student.id);
-                                  if (!error) {
-                                    // Remove student from the current state
-                                    setStudents(prev => prev.filter(s => s.id !== student.id));
+                        <tr key={student.id} style={{ borderBottom: '1px solid #eee' }}>
+                          {deleteMode && (
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={selectedStudents.includes(student.id)}
+                                onChange={e => {
+                                  if (e.target.checked) {
+                                    setSelectedStudents(prev => [...prev, student.id]);
                                   } else {
-                                    alert('Failed to delete student.');
+                                    setSelectedStudents(prev => prev.filter(id => id !== student.id));
                                   }
-                                }
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                                }}
+                              />
+                            </td>
+                          )}
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.student_id}</td>
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.name}</td>
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.email}</td>
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.department}</td>
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.year}</td>
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.semester}</td>
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>{student.date_of_birth}</td>
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                            {student.pfp_url ? (
+                              <img src={student.pfp_url} alt="pfp" style={{ width: 40, height: 40, borderRadius: '50%' }} />
+                            ) : (
+                              'N/A'
+                            )}
+                          </td>
+                          <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              <Link to={`/admin/profile/${student.student_id}`} className="btn btn-sm" style={{ background: '#a6192e', color: '#fff' }}>View Profile</Link>
+                              <button
+                                className="btn btn-sm"
+                                style={{ background: '#ef4444', color: '#fff' }}
+                                onClick={async () => {
+                                  if (window.confirm('Are you sure you want to delete this student? This will remove all related data.')) {
+                                    const { error } = await supabase.from('students').delete().eq('id', student.id);
+                                    if (!error) {
+                                      // Remove student from the current state
+                                      setStudents(prev => prev.filter(s => s.id !== student.id));
+                                    } else {
+                                      alert('Failed to delete student.');
+                                    }
+                                  }
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -497,6 +568,44 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
           <AdminTermExams />
         )}
       </div>
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(2px)',
+          zIndex: 2000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 32px rgba(0,0,0,0.2)', padding: 40, minWidth: 320, maxWidth: '90vw', textAlign: 'center' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Confirm Deletion</h2>
+            <div style={{ marginBottom: 24 }}>Are you sure you want to delete {selectedStudents.length} entr{selectedStudents.length === 1 ? 'y' : 'ies'}?</div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
+              <button
+                className="btn"
+                style={{ background: '#6b7280', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', minWidth: 100 }}
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn"
+                style={{ background: '#a6192e', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', minWidth: 100 }}
+                onClick={confirmDeleteSelected}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <style>{`
         @media (max-width: 700px) {
           .admin-dashboard, .card {

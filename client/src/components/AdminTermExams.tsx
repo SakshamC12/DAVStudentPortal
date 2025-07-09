@@ -130,6 +130,16 @@ const AdminTermExams: React.FC = () => {
   // Add at the top with other useState hooks:
   const [manualExamRowErrors, setManualExamRowErrors] = useState<string[]>([]);
 
+  // Add at the top with useState hooks:
+  const [selectedExamIds, setSelectedExamIds] = useState<string[]>([]);
+  const [showExamDeleteModal, setShowExamDeleteModal] = useState(false);
+  const [selectedMarkIds, setSelectedMarkIds] = useState<string[]>([]);
+  const [showMarkDeleteModal, setShowMarkDeleteModal] = useState(false);
+
+  // Add at the top with useState hooks:
+  const [examDeleteMode, setExamDeleteMode] = useState(false);
+  const [markDeleteMode, setMarkDeleteMode] = useState(false);
+
   // Fetch exams, students, subjects, marks
   useEffect(() => {
     fetchExams();
@@ -722,6 +732,54 @@ const AdminTermExams: React.FC = () => {
     });
   }, [markSearch, marks, students, subjects]);
 
+  // Handler for selecting exams
+  const handleExamCheckbox = (id: string, checked: boolean) => {
+    setSelectedExamIds(prev => checked ? [...prev, id] : prev.filter(eid => eid !== id));
+  };
+  const handleSelectAllExams = (checked: boolean) => {
+    setSelectedExamIds(checked ? filteredExams.map(e => e.id) : []);
+  };
+  // Handler for selecting marks
+  const handleMarkCheckbox = (id: string, checked: boolean) => {
+    setSelectedMarkIds(prev => checked ? [...prev, id] : prev.filter(mid => mid !== id));
+  };
+  const handleSelectAllMarks = (checked: boolean) => {
+    setSelectedMarkIds(checked ? filteredMarks.map(m => m.id) : []);
+  };
+  // Mass delete handlers
+  const handleDeleteSelectedExams = async () => {
+    setShowExamDeleteModal(false);
+    if (selectedExamIds.length === 0) return;
+    await supabase.from('term_exams').delete().in('id', selectedExamIds);
+    setSelectedExamIds([]);
+    fetchExams();
+  };
+  const handleDeleteSelectedMarks = async () => {
+    setShowMarkDeleteModal(false);
+    if (selectedMarkIds.length === 0) return;
+    await supabase.from('term_exam_marks').delete().in('id', selectedMarkIds);
+    setSelectedMarkIds([]);
+    fetchMarks();
+  };
+
+  // Handler for toggling selection mode:
+  const handleExamDeleteMode = () => {
+    setExamDeleteMode(true);
+    setSelectedExamIds([]);
+  };
+  const handleCancelExamDeleteMode = () => {
+    setExamDeleteMode(false);
+    setSelectedExamIds([]);
+  };
+  const handleMarkDeleteMode = () => {
+    setMarkDeleteMode(true);
+    setSelectedMarkIds([]);
+  };
+  const handleCancelMarkDeleteMode = () => {
+    setMarkDeleteMode(false);
+    setSelectedMarkIds([]);
+  };
+
   return (
     <div className="py-8">
       <div className="card" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem' }}>
@@ -776,6 +834,34 @@ const AdminTermExams: React.FC = () => {
                 >
                   {examSortOrder === 'asc' ? 'Asc' : 'Desc'}
                 </button>
+                {/* Delete Multiple Button (inline with sort controls) */}
+                {!examDeleteMode ? (
+                  <button
+                    className="btn btn-sm"
+                    style={{ background: '#a6192e', color: '#fff', fontWeight: 700, borderRadius: 8, padding: '0 20px', height: 32, fontSize: 16, marginLeft: 8, whiteSpace: 'nowrap' }}
+                    onClick={handleExamDeleteMode}
+                  >
+                    Delete Multiple
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="btn btn-sm"
+                      style={{ background: '#6b7280', color: '#fff', fontWeight: 700, borderRadius: 8, padding: '0 16px', height: 32, fontSize: 16, marginLeft: 8, whiteSpace: 'nowrap' }}
+                      onClick={handleCancelExamDeleteMode}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="btn btn-sm"
+                      style={{ background: selectedExamIds.length ? '#ef4444' : '#ccc', color: '#fff', fontWeight: 700, borderRadius: 8, padding: '0 16px', height: 32, fontSize: 16, whiteSpace: 'nowrap' }}
+                      onClick={() => setShowExamDeleteModal(true)}
+                      disabled={selectedExamIds.length === 0}
+                    >
+                      Delete Selected ({selectedExamIds.length})
+                    </button>
+                  </>
+                )}
               </div>
               <input
                 type="text"
@@ -793,6 +879,11 @@ const AdminTermExams: React.FC = () => {
                 <table className="marks-table" style={{ minWidth: 700, width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                   <thead>
                     <tr>
+                      {examDeleteMode && (
+                        <th style={{ width: 36, textAlign: 'center' }}>
+                          <input type="checkbox" checked={selectedExamIds.length === filteredExams.length && filteredExams.length > 0} onChange={e => setSelectedExamIds(e.target.checked ? filteredExams.map(e => e.id) : [])} />
+                        </th>
+                      )}
                       <th style={{ padding: '12px 18px', paddingLeft: 24, textAlign: 'left' }}>Exam Name</th>
                       <th style={{ padding: '12px 18px', textAlign: 'left' }}>Max Mark</th>
                       <th style={{ padding: '12px 18px', textAlign: 'left' }}>Weight</th>
@@ -802,6 +893,11 @@ const AdminTermExams: React.FC = () => {
                   <tbody>
                     {filteredExams.map((exam) => (
                       <tr key={exam.id} style={{ height: 64, borderBottom: '8px solid transparent' }}>
+                        {examDeleteMode && (
+                          <td style={{ textAlign: 'center' }}>
+                            <input type="checkbox" checked={selectedExamIds.includes(exam.id)} onChange={e => setSelectedExamIds(e.target.checked ? [...selectedExamIds, exam.id] : selectedExamIds.filter(id => id !== exam.id))} />
+                          </td>
+                        )}
                         <td style={{ padding: '10px 16px', paddingLeft: 24 }}>{exam.exam_name}</td>
                         <td style={{ padding: '10px 16px' }}>{exam.max_mark}</td>
                         <td style={{ padding: '10px 16px' }}>{exam.weight}</td>
@@ -1024,7 +1120,36 @@ const AdminTermExams: React.FC = () => {
         {activeTab === 'marks' && (
           <div>
             {/* Search Bar for Marks */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {!markDeleteMode ? (
+                  <button
+                    className="btn btn-sm"
+                    style={{ background: '#a6192e', color: '#fff', fontWeight: 700, borderRadius: 8, padding: '0 16px', height: 32 }}
+                    onClick={handleMarkDeleteMode}
+                  >
+                    Delete Multiple
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="btn btn-sm"
+                      style={{ background: '#6b7280', color: '#fff', fontWeight: 700, borderRadius: 8, padding: '0 16px', height: 32 }}
+                      onClick={handleCancelMarkDeleteMode}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="btn btn-sm"
+                      style={{ background: selectedMarkIds.length ? '#ef4444' : '#ccc', color: '#fff', fontWeight: 700, borderRadius: 8, padding: '0 16px', height: 32 }}
+                      onClick={() => setShowMarkDeleteModal(true)}
+                      disabled={selectedMarkIds.length === 0}
+                    >
+                      Delete Selected ({selectedMarkIds.length})
+                    </button>
+                  </>
+                )}
+              </div>
               <input
                 type="text"
                 placeholder="Search by Student ID, Name, or Subject"
@@ -1041,6 +1166,11 @@ const AdminTermExams: React.FC = () => {
                 <table className="marks-table" style={{ minWidth: 900, width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                   <thead>
                     <tr>
+                      {markDeleteMode && (
+                        <th style={{ width: 36, textAlign: 'center' }}>
+                          <input type="checkbox" checked={selectedMarkIds.length === filteredMarks.length && filteredMarks.length > 0} onChange={e => setSelectedMarkIds(e.target.checked ? filteredMarks.map(m => m.id) : [])} />
+                        </th>
+                      )}
                       <th style={{ padding: '12px 18px', paddingLeft: 24, textAlign: 'left' }}>Student</th>
                       <th style={{ padding: '12px 18px', textAlign: 'left' }}>Subject</th>
                       <th style={{ padding: '12px 18px', textAlign: 'left' }}>Exam</th>
@@ -1054,6 +1184,11 @@ const AdminTermExams: React.FC = () => {
                   <tbody>
                     {filteredMarks.map((mark) => (
                       <tr key={mark.id}>
+                        {markDeleteMode && (
+                          <td style={{ textAlign: 'center' }}>
+                            <input type="checkbox" checked={selectedMarkIds.includes(mark.id)} onChange={e => setSelectedMarkIds(e.target.checked ? [...selectedMarkIds, mark.id] : selectedMarkIds.filter(id => id !== mark.id))} />
+                          </td>
+                        )}
                         <td style={{ padding: '10px 16px', paddingLeft: 24 }}>{students.find((s) => s.student_id === mark.student_id)?.name || mark.student_id}</td>
                         <td style={{ padding: '10px 16px' }}>{subjects.find((sub) => sub.id === mark.subject_id)?.subject_name || mark.subject_id}</td>
                         <td style={{ padding: '10px 16px' }}>{exams.find((exam) => exam.id === mark.exam_id) ? formatExamName(exams.find((exam) => exam.id === mark.exam_id)) : mark.exam_id}</td>
@@ -1414,6 +1549,30 @@ const AdminTermExams: React.FC = () => {
           }
         }
       `}</style>
+      {showExamDeleteModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.25)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: 16, padding: 32, minWidth: 320, boxShadow: '0 4px 32px rgba(0,0,0,0.2)' }}>
+            <h2 style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>Delete {selectedExamIds.length} Exams?</h2>
+            <p style={{ marginBottom: 24 }}>Are you sure you want to delete the selected exams? This action cannot be undone.</p>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+              <button className="btn" style={{ background: '#6b7280', color: '#fff' }} onClick={() => setShowExamDeleteModal(false)}>Cancel</button>
+              <button className="btn" style={{ background: '#ef4444', color: '#fff' }} onClick={handleDeleteSelectedExams}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showMarkDeleteModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.25)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: 16, padding: 32, minWidth: 320, boxShadow: '0 4px 32px rgba(0,0,0,0.2)' }}>
+            <h2 style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>Delete {selectedMarkIds.length} Marks?</h2>
+            <p style={{ marginBottom: 24 }}>Are you sure you want to delete the selected marks? This action cannot be undone.</p>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+              <button className="btn" style={{ background: '#6b7280', color: '#fff' }} onClick={() => setShowMarkDeleteModal(false)}>Cancel</button>
+              <button className="btn" style={{ background: '#ef4444', color: '#fff' }} onClick={handleDeleteSelectedMarks}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

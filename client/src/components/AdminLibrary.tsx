@@ -104,6 +104,12 @@ const AdminLibrary: React.FC = () => {
   const [searchBook, setSearchBook] = useState('');
   const [searchBorrowing, setSearchBorrowing] = useState('');
 
+  // Add state at the top of the component:
+  const [deleteBookMode, setDeleteBookMode] = useState(false);
+  const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
+  const [deleteBookLoading, setDeleteBookLoading] = useState(false);
+  const [showDeleteBookModal, setShowDeleteBookModal] = useState(false);
+
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
@@ -327,6 +333,12 @@ const AdminLibrary: React.FC = () => {
       }
       if (isNaN(Number(row.total_copies)) || Number(row.total_copies) < 1) {
         rowErrors[idx] = 'Total Copies must be a positive number';
+        continue;
+      }
+      // Prevent duplicate ISBN only
+      const isDuplicateISBN = bulkBooks.some((b, i) => i !== idx && b.isbn.trim() === row.isbn.trim());
+      if (isDuplicateISBN) {
+        rowErrors[idx] = 'Duplicate ISBN in upload';
         continue;
       }
       validRows.push({
@@ -839,6 +851,28 @@ const AdminLibrary: React.FC = () => {
     fetchRequests();
   };
 
+  // Add this function inside the component:
+  const handleDeleteSelectedBooks = () => {
+    if (!selectedBooks.length) return;
+    setShowDeleteBookModal(true);
+  };
+
+  const confirmDeleteSelectedBooks = async () => {
+    setDeleteBookLoading(true);
+    try {
+      const { error } = await supabase.from('books').delete().in('id', selectedBooks);
+      if (error) throw error;
+      setBooks(prev => prev.filter(b => !selectedBooks.includes(b.id)));
+      setSelectedBooks([]);
+      setDeleteBookMode(false);
+      setShowDeleteBookModal(false);
+    } catch (err) {
+      alert('Failed to delete selected books.');
+    } finally {
+      setDeleteBookLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="py-8">
@@ -907,7 +941,36 @@ const AdminLibrary: React.FC = () => {
 
         {/* Book Catalog Tab */}
         {activeTab === 'books' && (
-          <div>
+          <>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginTop: '1.5rem', marginBottom: 24 }}>
+              {!deleteBookMode ? (
+                <button
+                  className="btn"
+                  style={{ background: '#a6192e', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #f3eaea', marginRight: 12 }}
+                  onClick={() => setDeleteBookMode(true)}
+                >
+                  Delete Multiple
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="btn"
+                    style={{ background: '#ef4444', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #f3eaea', marginRight: 12 }}
+                    onClick={() => { setDeleteBookMode(false); setSelectedBooks([]); }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn"
+                    style={{ background: selectedBooks.length ? '#a6192e' : '#ccc', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', fontSize: 16, boxShadow: '0 2px 8px #f3eaea' }}
+                    disabled={!selectedBooks.length || deleteBookLoading}
+                    onClick={handleDeleteSelectedBooks}
+                  >
+                    {deleteBookLoading ? 'Deleting...' : `Delete Selected (${selectedBooks.length})`}
+                  </button>
+                </>
+              )}
+            </div>
             {/* Search Bar for Book Catalog */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
               <input
@@ -929,6 +992,7 @@ const AdminLibrary: React.FC = () => {
                 <table className="marks-table" style={{ minWidth: 900, width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
                   <thead>
                     <tr>
+                      {deleteBookMode && <th></th>}
                       <th style={{ padding: '12px 18px', paddingLeft: 24, textAlign: 'left' }}>Title</th>
                       <th style={{ padding: '12px 18px', textAlign: 'left' }}>Author</th>
                       <th style={{ padding: '12px 18px', textAlign: 'left' }}>ISBN</th>
@@ -945,49 +1009,101 @@ const AdminLibrary: React.FC = () => {
                         book.author.toLowerCase().includes(searchBook.toLowerCase())
                       )
                       .map((book) => (
-                    <tr key={book.id}>
-                      <td style={{ padding: '10px 16px', paddingLeft: 24 }}>{book.title}</td>
-                      <td style={{ padding: '10px 16px' }}>{book.author}</td>
-                      <td style={{ padding: '10px 16px' }}>{book.isbn}</td>
-                      <td style={{ padding: '10px 16px', textAlign: 'center' }}>{book.total_copies}</td>
-                      <td style={{ padding: '10px 16px', textAlign: 'center' }}>{book.available_copies || book.total_copies}</td>
-                      <td style={{ padding: '10px 16px', textAlign: 'center' }}>{(book.total_copies - (book.available_copies || book.total_copies))}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-                        <button className="btn btn-sm" style={{ background: '#3b82f6', color: '#fff' }} onClick={() => handleEditBook(book)}>Edit</button>
-                        <button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={async () => {
-                          if (window.confirm('Are you sure you want to delete this book? This action cannot be undone.')) {
-                            const { error } = await supabase.from('books').delete().eq('id', book.id);
-                            if (!error) {
-                              setBooks(prev => prev.filter(b => b.id !== book.id));
-                            } else {
-                              alert('Failed to delete book.');
-                            }
-                          }
-                        }}>Delete</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                </tbody>
-              </table>
-            </div>
+                        <tr key={book.id}>
+                          {deleteBookMode && (
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={selectedBooks.includes(book.id)}
+                                onChange={e => {
+                                  if (e.target.checked) {
+                                    setSelectedBooks(prev => [...prev, book.id]);
+                                  } else {
+                                    setSelectedBooks(prev => prev.filter(id => id !== book.id));
+                                  }
+                                }}
+                              />
+                            </td>
+                          )}
+                          <td style={{ padding: '10px 16px', paddingLeft: 24 }}>{book.title}</td>
+                          <td style={{ padding: '10px 16px' }}>{book.author}</td>
+                          <td style={{ padding: '10px 16px' }}>{book.isbn}</td>
+                          <td style={{ padding: '10px 16px', textAlign: 'center' }}>{book.total_copies}</td>
+                          <td style={{ padding: '10px 16px', textAlign: 'center' }}>{book.available_copies || book.total_copies}</td>
+                          <td style={{ padding: '10px 16px', textAlign: 'center' }}>{(book.total_copies - (book.available_copies || book.total_copies))}</td>
+                          <td style={{ textAlign: 'center' }}>
+                            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                              <button className="btn btn-sm" style={{ background: '#3b82f6', color: '#fff' }} onClick={() => handleEditBook(book)}>Edit</button>
+                              <button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={async () => {
+                                if (window.confirm('Are you sure you want to delete this book? This action cannot be undone.')) {
+                                  const { error } = await supabase.from('books').delete().eq('id', book.id);
+                                  if (!error) {
+                                    setBooks(prev => prev.filter(b => b.id !== book.id));
+                                  } else {
+                                    alert('Failed to delete book.');
+                                  }
+                                }
+                              }}>Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             )}
-            {showEditBook && editingBook && (
-              <div className="card mb-6" style={{ background: '#e0f2fe', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => { setShowEditBook(false); setEditingBook(null); }}>
-                  Cancel
-                </button>
-                <h2 className="text-xl font-bold mb-4">Edit Book</h2>
-                <form onSubmit={handleUpdateBook}>
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                    <input type="text" placeholder="Title" value={newBook.title} onChange={e => setNewBook({ ...newBook, title: (e.target as HTMLInputElement).value })} className="form-input" required style={{ flex: 1 }} />
-                    <input type="text" placeholder="Author" value={newBook.author} onChange={e => setNewBook({ ...newBook, author: (e.target as HTMLInputElement).value })} className="form-input" required style={{ flex: 1 }} />
-                    <input type="text" placeholder="ISBN" value={newBook.isbn} onChange={e => setNewBook({ ...newBook, isbn: (e.target as HTMLInputElement).value })} className="form-input" style={{ flex: 1 }} />
-                    <input type="number" placeholder="Total Copies" value={newBook.total_copies} onChange={e => setNewBook({ ...newBook, total_copies: (e.target as HTMLInputElement).value })} className="form-input" required min={1} style={{ flex: 1 }} />
+            {showDeleteBookModal && (
+              <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(2px)',
+                zIndex: 2000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 32px rgba(0,0,0,0.2)', padding: 40, minWidth: 320, maxWidth: '90vw', textAlign: 'center' }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Confirm Deletion</h2>
+                  <div style={{ marginBottom: 24 }}>Are you sure you want to delete {selectedBooks.length} entr{selectedBooks.length === 1 ? 'y' : 'ies'}?</div>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
+                    <button
+                      className="btn"
+                      style={{ background: '#6b7280', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', minWidth: 100 }}
+                      onClick={() => setShowDeleteBookModal(false)}
+                      disabled={deleteBookLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="btn"
+                      style={{ background: '#a6192e', color: '#fff', fontWeight: 600, borderRadius: 8, padding: '0.5rem 1.5rem', minWidth: 100 }}
+                      onClick={confirmDeleteSelectedBooks}
+                      disabled={deleteBookLoading}
+                    >
+                      {deleteBookLoading ? 'Deleting...' : 'Delete'}
+                    </button>
                   </div>
-                  <button className="btn mt-4" style={{ background: '#3b82f6', color: '#fff' }} type="submit">Update Book</button>
-                </form>
+                </div>
+              </div>
+            )}
+            {!showAddBook && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+                <button
+                  onClick={() => {
+                    setShowAddBook(!showAddBook);
+                    setShowEditBook(false);
+                    setEditingBook(null);
+                  }}
+                  className="btn"
+                  style={{ background: '#a6192e', color: '#fff' }}
+                >
+                  <Plus size={18} style={{ marginRight: '0.5rem' }} />
+                  Add Book
+                </button>
               </div>
             )}
             {showAddBook && (
@@ -1065,21 +1181,32 @@ const AdminLibrary: React.FC = () => {
                               <th>Author</th>
                               <th>ISBN</th>
                               <th>Total Copies</th>
-                              <th>Error</th>
                               <th>Action</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {bulkBooks.map((row, idx) => (
-                              <tr key={idx}>
-                                <td><input type="text" value={row.title} onChange={e => handleBulkBookInputChange(idx, 'title', (e.target as HTMLInputElement).value)} className="form-input" /></td>
-                                <td><input type="text" value={row.author} onChange={e => handleBulkBookInputChange(idx, 'author', (e.target as HTMLInputElement).value)} className="form-input" /></td>
-                                <td><input type="text" value={row.isbn} onChange={e => handleBulkBookInputChange(idx, 'isbn', (e.target as HTMLInputElement).value)} className="form-input" /></td>
-                                <td><input type="number" value={row.total_copies} onChange={e => handleBulkBookInputChange(idx, 'total_copies', (e.target as HTMLInputElement).value)} className="form-input" min={1} /></td>
-                                <td style={{ color: 'red', fontSize: 13 }}>{bulkBookRowErrors[idx]}</td>
-                                <td><button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => handleRemoveBulkBookRow(idx)} type="button">Remove</button></td>
-                              </tr>
-                            ))}
+                            {bulkBooks.map((row, idx) => {
+                              const isDuplicateISBN = bulkBooks.some((b, i) => i !== idx && b.isbn.trim() === row.isbn.trim());
+                              const errorMsg = bulkBookRowErrors[idx] || (isDuplicateISBN ? 'Duplicate ISBN in upload' : '');
+                              return (
+                                <React.Fragment key={idx}>
+                                  <tr>
+                                    <td><input type="text" value={row.title} onChange={e => handleBulkBookInputChange(idx, 'title', (e.target as HTMLInputElement).value)} className="form-input" /></td>
+                                    <td><input type="text" value={row.author} onChange={e => handleBulkBookInputChange(idx, 'author', (e.target as HTMLInputElement).value)} className="form-input" /></td>
+                                    <td><input type="text" value={row.isbn} onChange={e => handleBulkBookInputChange(idx, 'isbn', (e.target as HTMLInputElement).value)} className="form-input" /></td>
+                                    <td><input type="number" value={row.total_copies} onChange={e => handleBulkBookInputChange(idx, 'total_copies', (e.target as HTMLInputElement).value)} className="form-input" min={1} /></td>
+                                    <td><button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => handleRemoveBulkBookRow(idx)} type="button">Remove</button></td>
+                                  </tr>
+                                  {errorMsg && (
+                                    <tr>
+                                      <td colSpan={5} style={{ color: 'red', fontSize: 13, padding: 0, background: 'transparent', border: 'none' }}>
+                                        <div style={{ margin: '0.25rem 0 0.5rem 0', textAlign: 'left' }}>{errorMsg}</div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </React.Fragment>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -1146,23 +1273,7 @@ const AdminLibrary: React.FC = () => {
                 )}
               </div>
             )}
-            {!showAddBook && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-                <button
-                  onClick={() => {
-                    setShowAddBook(!showAddBook);
-                    setShowEditBook(false);
-                    setEditingBook(null);
-                  }}
-                  className="btn"
-                  style={{ background: '#a6192e', color: '#fff' }}
-                >
-                  <Plus size={18} style={{ marginRight: '0.5rem' }} />
-                  Add Book
-                </button>
-              </div>
-            )}
-          </div>
+          </>
         )}
 
         {/* Borrowings Tab */}
