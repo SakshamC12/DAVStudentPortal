@@ -1595,6 +1595,21 @@ const AdminTermExams: React.FC = () => {
             padding-left: 0 !important;
             padding-right: 0 !important;
           }
+          .card.mb-6 {
+            max-width: 95vw !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+          }
+          .card.mb-6 input,
+          .card.mb-6 select {
+            max-width: 400px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+          }
           .mobile-x-btn { display: block !important; }
           .desktop-cancel-btn { display: none !important; }
         }
