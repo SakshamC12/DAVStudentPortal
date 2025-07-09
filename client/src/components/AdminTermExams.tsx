@@ -1604,8 +1604,7 @@ const AdminTermExams: React.FC = () => {
           }
           .card.mb-6 input,
           .card.mb-6 select {
-            max-width: 400px;
-            width: 100%;
+            max-width: 320px;
             margin-left: auto;
             margin-right: auto;
             display: block;
