@@ -119,6 +119,8 @@ const AdminLibrary: React.FC = () => {
   // 1. Add a utility to detect mobile view:
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
 
+  const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
+
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
@@ -1047,16 +1049,7 @@ const AdminLibrary: React.FC = () => {
                           <td style={{ textAlign: 'center' }}>
                             <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                               <button className="btn btn-sm" style={{ background: '#3b82f6', color: '#fff' }} onClick={() => handleEditBook(book)}>Edit</button>
-                              <button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={async () => {
-                                if (window.confirm('Are you sure you want to delete this book? This action cannot be undone.')) {
-                                  const { error } = await supabase.from('books').delete().eq('id', book.id);
-                                  if (!error) {
-                                    setBooks(prev => prev.filter(b => b.id !== book.id));
-                                  } else {
-                                    alert('Failed to delete book.');
-                                  }
-                                }
-                              }}>Delete</button>
+                              <button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => setBookToDelete(book)}>Delete</button>
                             </div>
                           </td>
                         </tr>
@@ -1418,45 +1411,38 @@ const AdminLibrary: React.FC = () => {
             </div>
             )}
             {showEditBorrowing && editingBorrowing && (
-              <div className="card mb-6" style={{ background: '#e0f2fe', marginTop: 24, maxWidth: 900, marginLeft: 'auto', marginRight: 'auto' }}>
-                {isMobile ? (
-                  <button
-                    className="btn"
-                    style={{ position: 'absolute', top: 12, right: 16, background: 'transparent', color: '#a6192e', fontSize: 28, border: 'none', zIndex: 2, padding: 0, minWidth: 36, minHeight: 36, lineHeight: 1 }}
-                    aria-label="Close"
-                    onClick={() => { setShowEditBorrowing(false); setEditingBorrowing(null); }}
-                  >
-                    ×
-                  </button>
-                ) : (
-                  <button className="btn mb-4" style={{ background: '#6b7280', color: '#fff', float: 'right' }} onClick={() => { setShowEditBorrowing(false); setEditingBorrowing(null); }}>
-                    Cancel
-                  </button>
-                )}
-                <h2 className="text-xl font-bold mb-4">Edit Borrowing</h2>
-                <form onSubmit={handleUpdateBorrowing}>
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                    <select value={newBorrowing.student_id} onChange={e => setNewBorrowing({ ...newBorrowing, student_id: (e.target as HTMLSelectElement).value })} className="form-input" required style={{ flex: 1 }}>
-                      <option value="">Select Student</option>
-                      {students.map(s => (
-                        <option key={s.id} value={s.student_id}>{s.name} ({s.student_id})</option>
-                      ))}
-                    </select>
-                    <select
-                      value={newBorrowing.book_id || ''}
-                      onChange={e => setNewBorrowing({ ...newBorrowing, book_id: (e.target as HTMLSelectElement).value })}
-                      className="form-input"
-                    >
-                      <option value="">Select Book</option>
-                      {books.map(book => (
-                        <option key={book.id} value={book.id}>{book.title}</option>
-                      ))}
-                    </select>
-                    <input type="date" value={newBorrowing.issue_date} onChange={e => setNewBorrowing({ ...newBorrowing, issue_date: (e.target as HTMLInputElement).value })} className="form-input" required style={{ flex: 1 }} />
-                    <input type="date" value={newBorrowing.return_date} onChange={e => setNewBorrowing({ ...newBorrowing, return_date: (e.target as HTMLInputElement).value })} className="form-input" required style={{ flex: 1 }} />
-                  </div>
-                  <button className="btn mt-4" style={{ background: '#3b82f6', color: '#fff' }} type="submit">Update Borrowing</button>
-                </form>
+              <div style={{
+                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 32px rgba(0,0,0,0.15)' }}>
+                  <h2 className="text-xl font-bold mb-4">Edit Borrowing</h2>
+                  <form onSubmit={handleUpdateBorrowing}>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                      <select value={newBorrowing.student_id} onChange={e => setNewBorrowing({ ...newBorrowing, student_id: (e.target as HTMLSelectElement).value })} className="form-input" required style={{ flex: 1 }}>
+                        <option value="">Select Student</option>
+                        {students.map(s => (
+                          <option key={s.id} value={s.student_id}>{s.name} ({s.student_id})</option>
+                        ))}
+                      </select>
+                      <select
+                        value={newBorrowing.book_id || ''}
+                        onChange={e => setNewBorrowing({ ...newBorrowing, book_id: (e.target as HTMLSelectElement).value })}
+                        className="form-input"
+                      >
+                        <option value="">Select Book</option>
+                        {books.map(book => (
+                          <option key={book.id} value={book.id}>{book.title}</option>
+                        ))}
+                      </select>
+                      <input type="date" value={newBorrowing.issue_date} onChange={e => setNewBorrowing({ ...newBorrowing, issue_date: (e.target as HTMLInputElement).value })} className="form-input" required style={{ flex: 1 }} />
+                      <input type="date" value={newBorrowing.return_date} onChange={e => setNewBorrowing({ ...newBorrowing, return_date: (e.target as HTMLInputElement).value })} className="form-input" required style={{ flex: 1 }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end', marginTop: 24 }}>
+                      <button type="button" className="btn" style={{ background: '#6b7280', color: '#fff', minWidth: 90 }} onClick={() => { setShowEditBorrowing(false); setEditingBorrowing(null); }}>Cancel</button>
+                      <button className="btn" style={{ background: '#3b82f6', color: '#fff', minWidth: 90 }} type="submit">Update Borrowing</button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
             {showAddBorrowing && (
@@ -1781,6 +1767,87 @@ const AdminLibrary: React.FC = () => {
           .desktop-cancel-btn { display: block !important; }
         }
       `}</style>
+      {bookToDelete && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 32px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>Delete Book</h3>
+            <p style={{ marginBottom: 24 }}>Are you sure you want to delete <b>{bookToDelete.title}</b>? This action cannot be undone.</p>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+              <button
+                className="btn"
+                style={{ background: '#6b7280', color: '#fff', minWidth: 90 }}
+                onClick={() => setBookToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn"
+                style={{ background: '#ef4444', color: '#fff', minWidth: 90 }}
+                onClick={async () => {
+                  const { error } = await supabase.from('books').delete().eq('id', bookToDelete.id);
+                  if (!error) {
+                    setBooks(prev => prev.filter(b => b.id !== bookToDelete.id));
+                  } else {
+                    alert('Failed to delete book.');
+                  }
+                  setBookToDelete(null);
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showEditBook && editingBook && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 32px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>Edit Book</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!editingBook.title || !editingBook.author || !editingBook.total_copies) return;
+              const { error } = await supabase.from('books').update({
+                title: editingBook.title,
+                author: editingBook.author,
+                isbn: editingBook.isbn,
+                total_copies: editingBook.total_copies
+              }).eq('id', editingBook.id);
+              if (!error) {
+                setBooks(prev => prev.map(b => b.id === editingBook.id ? { ...b, ...editingBook } : b));
+                setShowEditBook(false);
+                setEditingBook(null);
+              } else {
+                alert('Failed to update book.');
+              }
+            }}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4 }}>Title</label>
+                <input className="form-input" type="text" value={editingBook.title} onChange={e => setEditingBook({ ...editingBook, title: e.target.value })} required />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4 }}>Author</label>
+                <input className="form-input" type="text" value={editingBook.author} onChange={e => setEditingBook({ ...editingBook, author: e.target.value })} required />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4 }}>ISBN</label>
+                <input className="form-input" type="text" value={editingBook.isbn || ''} onChange={e => setEditingBook({ ...editingBook, isbn: e.target.value })} />
+              </div>
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: 'block', marginBottom: 4 }}>Total Copies</label>
+                <input className="form-input" type="number" min={1} value={editingBook.total_copies} onChange={e => setEditingBook({ ...editingBook, total_copies: Number(e.target.value) })} required />
+              </div>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+                <button type="button" className="btn" style={{ background: '#6b7280', color: '#fff', minWidth: 90 }} onClick={() => { setShowEditBook(false); setEditingBook(null); }}>Cancel</button>
+                <button type="submit" className="btn" style={{ background: '#3b82f6', color: '#fff', minWidth: 90 }}>Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

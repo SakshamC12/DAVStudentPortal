@@ -146,6 +146,10 @@ const AdminTermExams: React.FC = () => {
   const [examDeleteMode, setExamDeleteMode] = useState(false);
   const [markDeleteMode, setMarkDeleteMode] = useState(false);
 
+  // Add at the top with useState hooks:
+  const [examToDelete, setExamToDelete] = useState<string | null>(null);
+  const [markToDelete, setMarkToDelete] = useState<string | null>(null);
+
   // Fetch exams, students, subjects, marks
   useEffect(() => {
     fetchExams();
@@ -918,7 +922,7 @@ const AdminTermExams: React.FC = () => {
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                             <button className="btn btn-sm" style={{ background: '#3b82f6', color: '#fff' }} onClick={() => handleExamEdit(exam)}>Edit</button>
-                            <button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => handleExamDelete(exam.id)}>Delete</button>
+                            <button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => setExamToDelete(exam.id)}>Delete</button>
                           </div>
                         </td>
                       </tr>
@@ -1235,7 +1239,7 @@ const AdminTermExams: React.FC = () => {
                         <td style={{ textAlign: 'center' }}>
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
                             <button className="btn btn-sm" style={{ background: '#3b82f6', color: '#fff' }} onClick={() => handleMarkEdit(mark)}>Edit</button>
-                            <button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => handleMarkDelete(mark.id)}>Delete</button>
+                            <button className="btn btn-sm" style={{ background: '#ef4444', color: '#fff' }} onClick={() => setMarkToDelete(mark.id)}>Delete</button>
                           </div>
                         </td>
                       </tr>
@@ -1647,6 +1651,36 @@ const AdminTermExams: React.FC = () => {
             <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
               <button className="btn" style={{ background: '#6b7280', color: '#fff' }} onClick={() => setShowMarkDeleteModal(false)}>Cancel</button>
               <button className="btn" style={{ background: '#ef4444', color: '#fff' }} onClick={handleDeleteSelectedMarks}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {examToDelete && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 32px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>Delete Exam</h3>
+            <p style={{ marginBottom: 24 }}>Are you sure you want to delete this exam? This action cannot be undone.</p>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+              <button className="btn" style={{ background: '#6b7280', color: '#fff', minWidth: 90 }} onClick={() => setExamToDelete(null)}>Cancel</button>
+              <button className="btn" style={{ background: '#ef4444', color: '#fff', minWidth: 90 }} onClick={async () => {
+                await handleExamDelete(examToDelete);
+                setExamToDelete(null);
+              }}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {markToDelete && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 32px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>Delete Mark</h3>
+            <p style={{ marginBottom: 24 }}>Are you sure you want to delete this mark? This action cannot be undone.</p>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+              <button className="btn" style={{ background: '#6b7280', color: '#fff', minWidth: 90 }} onClick={() => setMarkToDelete(null)}>Cancel</button>
+              <button className="btn" style={{ background: '#ef4444', color: '#fff', minWidth: 90 }} onClick={async () => {
+                await handleMarkDelete(markToDelete);
+                setMarkToDelete(null);
+              }}>Delete</button>
             </div>
           </div>
         </div>
