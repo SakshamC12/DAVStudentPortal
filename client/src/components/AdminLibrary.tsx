@@ -916,7 +916,7 @@ const AdminLibrary: React.FC = () => {
             }}
           >
             <BookOpen size={18} style={{ marginRight: '0.5rem' }} />
-            Book Catalog
+            Book Catalogue
           </button>
           <button
             onClick={() => setActiveTab('borrowings')}
@@ -952,7 +952,7 @@ const AdminLibrary: React.FC = () => {
 
         {error && <div className="alert alert-error mb-4">{error}</div>}
 
-        {/* Book Catalog Tab */}
+        {/* Book Catalogue Tab */}
         {activeTab === 'books' && (
           <>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginTop: '1.5rem', marginBottom: 24 }}>
@@ -984,7 +984,7 @@ const AdminLibrary: React.FC = () => {
                 </>
               )}
             </div>
-            {/* Search Bar for Book Catalog */}
+            {/* Search Bar for Book Catalogue */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
               <input
                 type="text"
@@ -996,7 +996,7 @@ const AdminLibrary: React.FC = () => {
               />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-              <h2 className="text-xl font-bold">Book Catalog</h2>
+              <h2 className="text-xl font-bold">Book Catalogue</h2>
             </div>
             {books.length === 0 ? (
               <div className="card text-center">No books found.</div>
