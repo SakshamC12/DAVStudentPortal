@@ -2,7 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 const AdminTermExams: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'exams' | 'marks'>('exams');
+  const [activeTab, setActiveTab] = useState<'exams' | 'marks'>(() => {
+    const savedTab = localStorage.getItem('adminTermExamsActiveTab');
+    if (savedTab === 'exams' || savedTab === 'marks') {
+      return savedTab;
+    }
+    return 'exams';
+  });
 
   // Exams state
   const [exams, setExams] = useState<any[]>([]);
@@ -147,6 +153,10 @@ const AdminTermExams: React.FC = () => {
     fetchSubjects();
     fetchMarks();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('adminTermExamsActiveTab', activeTab);
+  }, [activeTab]);
 
   const fetchExams = async () => {
     setExamLoading(true);

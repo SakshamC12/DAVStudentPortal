@@ -371,7 +371,7 @@ const Marks: React.FC<MarksProps> = ({ student, adminView }) => {
           </div>
           {/* Made by Card */}
           <div className="card" style={{ textAlign: 'center', padding: '2rem', marginTop: '2rem' }}>
-            <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>Made by Saksham Chaturvedi.</span>
+            
           </div>
         </div>
       )}

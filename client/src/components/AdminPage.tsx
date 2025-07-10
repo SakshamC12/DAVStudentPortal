@@ -28,7 +28,13 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [activeTab, setActiveTab] = useState<'students' | 'library' | 'termexams'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'library' | 'termexams'>(() => {
+    const savedTab = localStorage.getItem('adminActiveTab');
+    if (savedTab === 'students' || savedTab === 'library' || savedTab === 'termexams') {
+      return savedTab;
+    }
+    return 'students';
+  });
   const [addTab, setAddTab] = useState<'manual' | 'bulk'>('manual');
   const [studentsToAdd, setStudentsToAdd] = useState<any[]>([{ student_id: '', name: '', email: '', department: '', year: '', semester: '', date_of_birth: '' }]);
   const [bulkStudents, setBulkStudents] = useState<any[]>([]);
@@ -43,6 +49,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
   // 1. Add a utility to detect mobile view:
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 700;
@@ -67,6 +74,10 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
       addFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [showAddForm]);
+
+  useEffect(() => {
+    localStorage.setItem('adminActiveTab', activeTab);
+  }, [activeTab]);
 
   const handleAddRow = () => {
     setStudentsToAdd([...studentsToAdd, { student_id: '', name: '', email: '', department: '', year: '', semester: '', date_of_birth: '' }]);
@@ -300,7 +311,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
                       <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Semester</th>
                       <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Date of Birth</th>
                       <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Profile</th>
-                      <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Marks</th>
+                      <th style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -346,17 +357,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
                               <button
                                 className="btn btn-sm"
                                 style={{ background: '#ef4444', color: '#fff' }}
-                                onClick={async () => {
-                                  if (window.confirm('Are you sure you want to delete this student? This will remove all related data.')) {
-                                    const { error } = await supabase.from('students').delete().eq('id', student.id);
-                                    if (!error) {
-                                      // Remove student from the current state
-                                      setStudents(prev => prev.filter(s => s.id !== student.id));
-                                    } else {
-                                      alert('Failed to delete student.');
-                                    }
-                                  }
-                                }}
+                                onClick={() => setStudentToDelete(student)}
                               >
                                 Delete
                               </button>
@@ -615,6 +616,40 @@ const AdminPage: React.FC<AdminPageProps> = ({ adminUser, onLogout }) => {
                 disabled={deleteLoading}
               >
                 {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {studentToDelete && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 320, boxShadow: '0 4px 32px rgba(0,0,0,0.15)' }}>
+            <h3 style={{ fontWeight: 700, fontSize: 20, marginBottom: 16 }}>Delete Student</h3>
+            <p style={{ marginBottom: 24 }}>Are you sure you want to delete <b>{studentToDelete.name}</b>? This will remove all related data.</p>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'flex-end' }}>
+              <button
+                className="btn"
+                style={{ background: '#6b7280', color: '#fff', minWidth: 90 }}
+                onClick={() => setStudentToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn"
+                style={{ background: '#ef4444', color: '#fff', minWidth: 90 }}
+                onClick={async () => {
+                  const { error } = await supabase.from('students').delete().eq('id', studentToDelete.id);
+                  if (!error) {
+                    setStudents(prev => prev.filter(s => s.id !== studentToDelete.id));
+                  } else {
+                    alert('Failed to delete student.');
+                  }
+                  setStudentToDelete(null);
+                }}
+              >
+                Delete
               </button>
             </div>
           </div>

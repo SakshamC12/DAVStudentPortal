@@ -40,7 +40,13 @@ const AdminLibrary: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   // Add state for requests tab
-  const [activeTab, setActiveTab] = useState<'books' | 'borrowings' | 'requests'>('books');
+  const [activeTab, setActiveTab] = useState<'books' | 'borrowings' | 'requests'>(() => {
+    const savedTab = localStorage.getItem('adminLibraryActiveTab');
+    if (savedTab === 'books' || savedTab === 'borrowings' || savedTab === 'requests') {
+      return savedTab;
+    }
+    return 'books';
+  });
   const [requests, setRequests] = useState<any[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
   const [requestActionLoading, setRequestActionLoading] = useState<string | null>(null);
@@ -117,6 +123,10 @@ const AdminLibrary: React.FC = () => {
     fetchData();
     // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('adminLibraryActiveTab', activeTab);
+  }, [activeTab]);
 
   // Fetch requests
   const fetchRequests = async () => {
